@@ -7,5 +7,7 @@ This repository is designed to help users perform quantitative **chemical exchan
 
 # Questions and Support
 If you have trouble with any of the code on this site or have questions about its use, please contact me! I am happy to do what I can to help make it usable for you.
+
 Primary email:   dkorenchan@mgh.harvard.edu
+
 Backup email:    dave.korenchan@gmail.com
