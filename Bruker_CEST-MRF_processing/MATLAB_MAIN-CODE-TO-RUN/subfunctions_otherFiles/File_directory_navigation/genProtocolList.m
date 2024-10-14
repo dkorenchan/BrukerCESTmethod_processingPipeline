@@ -7,29 +7,34 @@
 %       studyDir    -   Full path to desired directory of study
 %
 %   OUTPUTS:
-%       scanNames   -   Cell array of strings describing each scan within
+%       scanEntries -   Cell array of strings describing each scan within
 %                       study
 %
-function scanNames=genProtocolList(studyDir)
+function scanEntries=genProtocolList(studyDir)
 % Read in all scan names from ScanProgram.scanProgram
 fin=fopen(fullfile(studyDir,'ScanProgram.scanProgram'),'r');
 scanNames={};
+scanNo={};
 ctr=1;
 SIEflg=false;
 while (~feof(fin))
     line = fgetl(fin);  
-    if contains(line,'<displayName>') && SIEflg
-        scanNames(ctr)=extractBetween(line,'<displayName>','</displayName>');
+    if contains(line,'<expno>') && SIEflg
+        scanNo(ctr)=extractBetween(line,'<expno>','</expno>');
         ctr=ctr+1;
         SIEflg=false;
-    elseif contains(line,'<ScanInstructionEntity>')
+    elseif contains(line,'<displayName>') && SIEflg
+        scanNames(ctr)=extractBetween(line,'<displayName>','</displayName>');
+    elseif contains(line,'ScanInstructionEntity>') %should work for PV360 and below
         SIEflg=true;
     end
 end
 fclose(fin);
 % Write to file Protocol_list.txt, save in study directory
+scanNo=scanNo'; %flip to be in column format
 scanNames=scanNames'; %flip to be in column format
-scanTable=table(scanNames);
+scanEntries=strcat(scanNo,' ----',scanNames);
+scanTable=table(scanEntries);
 writetable(scanTable,fullfile(studyDir,'Protocol_list.txt'),...
     "WriteVariableNames",false,"QuoteStrings","none");
 end

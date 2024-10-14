@@ -61,7 +61,7 @@ wl=uilabel(dfig,'Position',[20 20 400 40],'Text','','FontColor','r',...
 % If the directory contains a .txt list of scans, pull that up in 
 % separate fig; otherwise, if a PV360 study, generate it from the
 % internal list
-slfig=displayScanList(base_dir,PV360flg);
+slfig=displayScanList(base_dir);
 
 waitfor(dfig);
 
