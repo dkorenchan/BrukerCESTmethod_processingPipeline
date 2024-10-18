@@ -1,4 +1,4 @@
-# cest-mrf-image-recon
+# BrukerCESTmethod_processingPipeline
 This repository is designed to help users perform quantitative **chemical exchange saturation transfer (CEST)** imaging using **magnetic resonance fingerprinting (MRF)**. It contains the following files:
 
 1. Bruker ParaVision method files for acquiring CEST-MRF images on a Bruker preclinical scanner;
