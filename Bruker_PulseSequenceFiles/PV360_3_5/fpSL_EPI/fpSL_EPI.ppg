@@ -1,0 +1,163 @@
+;****************************************************************
+;
+; Copyright (c) 2001 - 2003
+; Bruker BioSpin MRI GmbH
+; D-76275 Ettlingen, Germany
+;
+; All Rights Reserved
+;
+; EPI -  echo planar imaging method
+;
+;****************************************************************
+;
+; d0 - TR padding
+; d1 - refocusing
+; d2 - TE padding
+; d3 = RampTime + InterGradientWaitTime
+; d4 = RiseTime
+; d5 = spoiler
+; d7 - TE padding (spin echo)
+; d8 = SCON / BLKTR_MAN (Amplifier preblanking)
+
+#include <MRI.include>
+#include <PrepModulesHead_FpSL.mod>
+#include <epiHead.mod>
+#include <DynamicShim.mod>
+
+;counter of dummy scans
+define loopcounter lds = {$PVM_DummyScans}
+
+define list<frequency> freqRx = {$ACQ_O1B_list}
+define list<frequency> freqTx = {$ACQ_O1_list}
+; added for fp_EPI
+define list<power> ExcPwL = {$PpgPowerList2}
+5u ExcPwL.res
+define list<delay> Repvd= {$ACQ_vd_list}
+ 5u     Repvd.res
+INIT_DEVICES
+
+#define r3d ACQ_spatial_phase_2
+
+
+if(PVM_EpiAdjustMode==2)
+{
+    define list <grad_scalar> r3d
+}
+else
+{
+    grad_zero_for_gs <r3d>
+}
+ 
+         0u  grad_matrix.res
+             subr MbEpiBlipInit()
+             subr DynamicShimRes()
+             subr SatTransInit()
+             subr TriggerOutStart()
+
+start,   0u
+             subr DriftComp()
+             subr TriggerPhase()
+             subr TriggerOutVolume()
+             subr Tagging()
+
+;--------------------- start of the main loop ----------------------
+slice,       UPDATE_DYN_PARS_30u 
+         subr DynamicShimApply()
+         5u       freqRx(receive):f1
+         5u       freqRx.inc
+
+             subr MbEpiBlipRestore()
+             subr TriggerSlice()
+	     subr EpiGradSync()
+             subr TriggerOutSlice()
+
+;----------------------- preparation modules -----------------------
+             subr FovSat()
+             subr SatTrans()
+             subr FatSup()
+
+         d5       grad_ramp{0, 0, g2}
+
+;------------------------ slice selection --------------------------
+         d4       grad_ramp{0, 0, g0}     freqTx:f1
+         100u	  ExcPwL:f1 ;gatepulse 1   ; added d8 delay??
+        (p0:sp0(currentpower)  ph0):f1
+
+         d3       grad_off                freqTx.inc
+
+;-------------------------- slice rephase --------------------------
+         d1      grad_ramp{0, 0, g1 }
+         d4      grad_off
+
+   if(PVM_SignalType == SignalType_Echo)
+   {
+         d7
+         d9      grad_ramp{0, 0, g3}
+         d4      grad_ramp{0, 0, g0}
+
+        (p1:sp1  ph1):f1
+
+         d9      grad_ramp{0, 0, g3}
+         d4      grad_off
+   }
+
+;---------------------------- TE padding ---------------------------
+         d2
+
+#include <epi.mod>
+
+;---------------------------- slice loop ---------------------------         
+         subr DynamicShimInc()
+
+;         d0      grad_matrix.inc
+
+;------- added for fpEPI------------
+        Repvd  grad_matrix.inc
+      lo to slice times NSLICES/PVM_MbEncNBands
+         0u      grad_matrix.res
+
+         subr DynamicShimRes()
+        
+         d6                               ;inter-volume delay
+
+;--------------------------- dummy loop ----------------------------
+   "lds = lds - 1"
+   if "lds >= 0"
+   {
+         0u       EpiVd.res
+      goto start
+   }
+
+;-------------------------- averaging loop -------------------------
+         0u      ipp0
+
+     lo to start times NA
+
+;----------------------------- 2d-loop -----------------------------
+         0u      rpp0 Interleaving.inc
+
+         subr MbEpiBlipSet()
+
+     lo to start times PVM_EpiNShots
+
+;----------------------------------3d loop--------------------------
+         0u       r3d.inc
+         subr MbEpiBlipInit()
+
+        lo to start times l2       ;PVM_EncMatrix[2]
+         0u      Interleaving.res
+  10u Repvd.inc   ExcPwL.inc ;PwL.inc 
+;-------------------------- sattrans loop --------------------------
+         subr SatTransInc()
+
+      
+ 
+;------------------------- repetition loop -------------------------
+     lo to start times NR
+
+SETUP_GOTO(start)
+
+exit
+
+ph0 = 0 2
+ph1 = 0
