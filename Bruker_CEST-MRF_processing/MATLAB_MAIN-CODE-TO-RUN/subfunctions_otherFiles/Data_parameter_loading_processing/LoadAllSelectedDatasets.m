@@ -34,8 +34,6 @@
 function img=LoadAllSelectedDatasets(specifiedflg,scan_dirs,i_flds,cfg,...
     parprefs,PV360flg)
 
-grps=fieldnames(i_flds);
-
 %% LOAD INTO MATLAB: MRF 
 if specifiedflg.MRF
     % Set up config struct to include location of MRF dataset
@@ -98,21 +96,44 @@ if specifiedflg.WASSR
 end
 
 
+%% LOAD INTO MATLAB: Z-SPEC IMAGING
+if specifiedflg.zSpec
+    disp('Z-spectroscopic imaging data: loading...')
+    [img.zSpec.img,img.zSpec.M0img,info.zSpec]=zSpec_load_proc(...
+        fullfile(scan_dirs.base_dir,scan_dirs.zSpec,'pdata','1'),parprefs,...
+        PV360flg);
+    img.zSpec.size=size(img.zSpec.M0img);
+    img.zSpec.ppm=info.zSpec.w_offsetPPM;
+    disp('Z-spectroscopic imaging data loading and processing complete!')
+end
+
+
 %% DUMMY IMAGES FOR NONSELECTED DATASET TYPES
+% ID which image groups ('MRF','zSpec','other') were specified, and ONLY
+% generate dummy images to fill in the gaps for these specified groups!
+grps=fieldnames(img);
+
 if ~prod(cell2mat(struct2cell(specifiedflg))) 
     disp('Filling in non-specified image datasets with dummy images...')
-    if isfield(img,'MRF')
-        dummysize=img.MRF.size;
-    else
-        dummysize=img.other.size;
-    end
+
+    % Generate dummy images of all zeros, using the default size determined
+    % for each group
     for ii=1:numel(grps)
-        if ~isfield(img,grps{ii})
-            img.(grps{ii})=struct;
-        end
+        dummysize=img.(grps{ii}).size;
+%         if ~isfield(img,grps{ii})
+%             img.(grps{ii})=struct;
+%         end
         for jj=1:numel(i_flds.(grps{ii}))
             if ~isfield(img.(grps{ii}),i_flds.(grps{ii}){jj})
-                img.(grps{ii}).(i_flds.(grps{ii}){jj})=zeros(dummysize);
+                if strcmp(i_flds.(grps{ii}){jj},'fitImg') %make dummy image for each fitable pool
+                    for kk=1:numel(i_flds.poolnames)
+                        img.(grps{ii}).(i_flds.(grps{ii}){jj}).(i_flds.poolnames{kk})...
+                            =zeros(dummysize);
+                    end
+                elseif ~strcmp(i_flds.(grps{ii}){jj},'avgZspec') % img.zSpec.avgZspec will be 
+                    % initialized with the first ROI drawn!
+                    img.(grps{ii}).(i_flds.(grps{ii}){jj})=zeros(dummysize);
+                end
             end
         end
     end

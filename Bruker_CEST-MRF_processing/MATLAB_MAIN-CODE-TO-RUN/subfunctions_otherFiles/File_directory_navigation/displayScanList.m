@@ -4,15 +4,12 @@
 %
 %   INPUTS:
 %       base_dir        -   String containing path to main study directory
-%       PV360flg        -   Logical indicating whether the selected study is
-%                           identified as being obtained with ParaVision 360
-%                           (true) or an older ParaVision version (false)       
 %
 %   OUTPUTS:
 %       listFigHandle   -   Figure handle for displayed list of scans from
 %                           study
 %
-function listFigHandle=displayScanList(base_dir,PV360flg)
+function listFigHandle=displayScanList(base_dir)
 dirtxts = dir(fullfile(base_dir,'*.txt'));
 if ~isempty(dirtxts)
     protlist = dirtxts(contains({dirtxts.name},'list','IgnoreCase',true) | ...
@@ -31,7 +28,7 @@ if ~isempty(dirtxts)
     end
 end
 
-if ~exist('listFigHandle','var') && PV360flg %generate protocol list if PV360 and a protocol list wasn't found
+if ~exist('listFigHandle','var') %generate protocol list if a protocol list wasn't found
     disp('Scan protocol list not found. Generating from ScanProgram.scanProgram...')
     pl=genProtocolList(base_dir);
     listFigHandle=msgbox([{'Information on scan list:'};pl]);

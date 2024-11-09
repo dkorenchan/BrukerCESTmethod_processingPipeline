@@ -199,9 +199,9 @@ else
 end
 for iii = 1:length(i_flds.(plotgrp))
     % Plot image, making voxels outside ROIs black (if ErrorMaps)
-    nexttile([1 2]); 
+    nexttile([1 2]); imagesc(zeros([img.(plotgrp).size,3]));
+    hold on;
     if strcmp(plotgrp,'ErrorMaps')
-        imagesc(zeros([img.(plotgrp).size,3])); hold on;
         if contains(i_flds.ErrorMaps{iii},'fs')
             allROImask=zeros(size(img.ErrorMaps.(i_flds.ErrorMaps{iii})));
             if isfield(roi,'nomConc')
@@ -240,8 +240,6 @@ for iii = 1:length(i_flds.(plotgrp))
                     'FontSize',18);
                 xlabel('Offset (ppm)'); ylabel('M_{sat}/M_0');
                 axis('square'); set(gca,'XDir','reverse');
-            else
-                axis('off');
             end
         else
             if strcmp(i_flds.(plotgrp){iii},'fitImg') %display the fitted subimage!
@@ -332,7 +330,6 @@ if isfield(roi(roiidx),'nomExch')
 else
     set(ne,'String','Inf');
 end
-plotAxImg;
 end
 
 
@@ -509,9 +506,9 @@ end
 % across all ROI voxels for each ROI
 if specifiedflg.zSpec
     for iii=1:nROI
-        zimgReshape=reshape(img.zSpec.img,prod(size(img.zSpec.img,[1,2])),[]);
-        maskReshape=reshape(roi(iii).mask,prod(size(roi(iii).mask,[1,2])),[]);
-        img.zSpec.avgZspec(iii,:)=mean(zimgReshape(maskReshape,:),1);
+        zimgReshape=reshape(img.zSpec.img)
+        img.zSpec.avgZspec(iii,:)=squeeze(mean(img.zSpec.img.*...
+            repmat(roi(iii).mask,[1,1,size(img.zSpec.img,3)])));
     end
 end
 
@@ -536,16 +533,10 @@ for iii=1:nROI
     for jjj=1:nn
         grp=grps{jjj};
         for kkk=1:length(i_flds.(grp))
-            if ~strcmp(i_flds.(grp){kkk},'avgZspec')
-                if strcmp(i_flds.(grp){kkk},'fitImg')
-                    vals=img.(grp).(i_flds.(grp){kkk}).(selPool)(roi(iii).mask);
-                else
-                    vals=img.(grp).(i_flds.(grp){kkk})(roi(iii).mask);
-                end
-                vals=vals(vals~=0); %remove 0's
-                roi(iii).(i_flds.(grp){kkk}).mean=mean(vals);
-                roi(iii).(i_flds.(grp){kkk}).std=std(vals);
-            end
+            vals=img.(grp).(i_flds.(grp){kkk})(roi(iii).mask);
+            vals=vals(vals~=0); %remove 0's
+            roi(iii).(i_flds.(grp){kkk}).mean=mean(vals);
+            roi(iii).(i_flds.(grp){kkk}).std=std(vals);
         end
     end
     if strcmp(plotgrp,'MRF')

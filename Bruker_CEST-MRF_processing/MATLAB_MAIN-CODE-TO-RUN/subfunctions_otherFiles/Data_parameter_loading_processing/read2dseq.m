@@ -105,18 +105,30 @@ switch typestr
             satpars=parExpandPV360(satpars);          
         else
             satpars=readPars(fullfile(pname,'..','..'),'method',...
-                {'##$SatFreqList','##$PVM_MagTransPower'});
+                {'##$SatFreqList','##$PVM_MagTransPower','##$PVM_FrqWork'});
         end
 
-        % Prepare vector of saturation offsets
+        % Prepare vector of saturation offsets: (1) ID the largest
+        % absolute value offset as the M0 image; then (2) remove M0 from 
+        % the raw data and offset list; then (3) sort the remaining 
+        % offsets from lowest to highest, noting the order
         info.w_offset1=str2num(satpars{1}); %convert to array of type double
-        info.w_offset1(1)=[]; %remove 1st value (corresponding with M0_wassr)
-        info.w_offset1=sort(info.w_offset1); %sort lowest to highest
+        M0idx=find(abs(info.w_offset1)==max(abs(info.w_offset1)));
+        M0image=rawdata(:,:,:,M0idx)';
 
-        if PV360flg %NOTE: convert to Hz for PV360
-            omega_0=str2num(satpars{3});
-            omega_0=omega_0(1); %since an array is pulled in            
+        rawdata(:,:,:,M0idx)=[]; %remove M0 image
+        info.w_offset1(M0idx)=[]; %remove M0 value 
+        
+        [info.w_offset1,info.offsetAcqOrder]=sort(info.w_offset1); 
+            %sort lowest to highest
+
+        omega_0=str2num(satpars{3});
+        omega_0=omega_0(1); %since an array is pulled in 
+        if PV360flg %NOTE: convert from ppm to Hz for PV360 
+            info.w_offsetPPM=info.w_offset1;
             info.w_offset1=info.w_offset1*omega_0;
+        else
+            info.w_offsetPPM=info.w_offset1./omega_0;
         end
 
         % Read in saturation power (in uT)
@@ -127,19 +139,22 @@ switch typestr
             info.satpwr_uT=str2double(satpars{2});
         end
 
-        % Read in and sort imaging data
-        image=zeros(Matrix_X,Matrix_Y,niter-1);
-        n1=niter-1;
-        for i=1:nslices    
-            for k=1:(round(n1/2)-1)
-                image(:,:,k)=rawdata(:,:,i,2*k)';
-            end        
-            image(:,:,round(n1/2))=rawdata(:,:,i,n1)';        
-            for k=1:(round(n1/2)-1)
-                image(:,:,n1-k+1)=rawdata(:,:,i,2*k+1)';
-            end       
-            M0image=rawdata(:,:,i,1)'; 
-        end
+        % Sort imaging data based upon offsets
+        image=rawdata(:,:,:,info.offsetAcqOrder);
+        image=permute(image,[2,1,3,4]);
+%         % Read in and sort imaging data
+%         image=zeros(Matrix_X,Matrix_Y,niter-1);
+%         n1=niter-1;
+%         for i=1:nslices    
+%             for k=1:(round(n1/2)-1)
+%                 image(:,:,k)=rawdata(:,:,i,2*k)';
+%             end        
+%             image(:,:,round(n1/2))=rawdata(:,:,i,n1)';        
+%             for k=1:(round(n1/2)-1)
+%                 image(:,:,n1-k+1)=rawdata(:,:,i,2*k+1)';
+%             end       
+%             M0image=rawdata(:,:,i,1)'; 
+%         end
     case 'quesp'
         % Read in saturation powers (in uT) and offsets (in Hz)        
         satpars=readPars(fullfile(pname,'..','..'),'method',...
