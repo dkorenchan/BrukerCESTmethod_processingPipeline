@@ -113,21 +113,22 @@ toc;
 
 % Fill in output maps in vector format, then reshape into 2D maps
 for ii=1:numel(zppars.pools)
-    fitAmplMaps.(zppars.pools{ii})=zeros(size(zImg,[1,2]));
-    fitAmplMaps.(zppars.pools{ii})(ThmaskIdxVec)=fittedAmpls(ii,:);
+    fAM.(zppars.pools{ii})=zeros(size(zImg,[1,2]));
+    fAM.(zppars.pools{ii})(ThmaskIdxVec)=fittedAmpls(ii,:);
+    fitAmplMaps.(zppars.pools{ii})=reshape(fAM,size(zImg,[1,2]));
 
-    fPM.(zppars.pools{ii})=zeros(prod(size(zImg,[1,2])),size(zImg,3));
+    fPM.(zppars.pools{ii})=zeros(size(zImg));
     for jj=1:numel(ThmaskIdxVec)
         idx=ThmaskIdxVec(jj);
         fPM.(zppars.pools{ii})(idx,:)=fittedPeaksIndiv(ii,jj,:);
     end
-    fitPeakMaps.(zppars.pools{ii})=reshape(fPM.(zppars.pools{ii}),size(zImg));
+    fitPeakMaps.(zppars.pools{ii})=reshape(fPM,size(zImg));
 end
-fPM.all=zeros(prod(size(zImg,[1,2])),size(zImg,3));
+fPM.all=zeros(size(zImg));
 for ii=1:numel(ThmaskIdxVec)
     idx=ThmaskIdxVec(ii);
     fPM.all(idx,:)=fittedPeaksAll(ii,:);
 end
-fitPeakMaps.all=reshape(fPM.all,size(zImg));
+fitPeakMaps.all=reshape(fittedPeaksAll,size(zImg));
 
 end
