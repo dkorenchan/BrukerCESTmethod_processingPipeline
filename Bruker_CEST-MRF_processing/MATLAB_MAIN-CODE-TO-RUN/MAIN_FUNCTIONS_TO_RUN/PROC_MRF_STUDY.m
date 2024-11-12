@@ -83,17 +83,23 @@ end
 %%  DATA SAVING
 % Write table to .csv file
 if isfield(roi,'mask')
-    if isfield(roi,'MRF')
-        rtcsv = calcROIsCSV(roi,'MRF');
-        writetable(fullfile(configs.save_dir,rtcsv),'MRFproc.csv',...
+    if isfield(img,'MRF')
+        rtcsv=calcROIsCSV(roi,'MRF');
+        writetable(rtcsv,fullfile(configs.save_dir,'MRFproc.csv'),...
             'Delimiter',',');
         disp('ROI data for MRF imaging written to MRFproc.csv')
     end
-    if isfield(roi,'other')
-        rtcsv = calcROIsCSV(roi,'other');
-        writetable(fullfile(configs.save_dir,rtcsv),'MRFproc_other.csv',...
+    if isfield(img,'other')
+        rtcsv=calcROIsCSV(roi,'other');
+        writetable(rtcsv,fullfile(configs.save_dir,'MRFproc_other.csv'),...
             'Delimiter',',');  
         disp('ROI data for other imaging data written to MRFproc_other.csv')
+    end
+    if isfield(img,'zSpec')
+        rtcsv=calcROIsCSV(roi,'zSpec');
+        writetable(rtcsv,fullfile(configs.save_dir,'MRFproc_zSpec.csv'),...
+            'Delimiter',',');  
+        disp('ROI data for z-spectroscopic imaging data written to MRFproc_zSpec.csv')
     end
 end
 

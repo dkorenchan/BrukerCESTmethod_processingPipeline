@@ -99,7 +99,6 @@ switch grpstr
             fitMTStDev(iii)=roi(iii).fitImg.MT.std;             
         end
         tbl = table(ROIName,MTRasymMean,MTRasymStDev,fitOHMean,fitOHStDev,...
-            fitAmineMean,fitAmineStDev,fitAmideMean,fitAmideStDev,fitNOEMean,...
-            fitNOEStDev,fitMTMean,fitMTStDev);   
+            fitAmineMean,fitAmineStDev,fitAmideMean);   
 end
 end

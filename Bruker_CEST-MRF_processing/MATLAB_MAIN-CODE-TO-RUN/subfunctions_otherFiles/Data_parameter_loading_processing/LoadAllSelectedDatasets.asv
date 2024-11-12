@@ -130,9 +130,9 @@ if ~prod(cell2mat(struct2cell(specifiedflg)))
                     for kk=1:numel(i_flds.poolnames)
                         img.zSpec.fitImg.(i_flds.poolnames{kk})=zeros(dummysize);
                     end
-                elseif ~strcmp(i_flds.(grps{ii}){jj},'avgZspec') % avoid img.zSpec.avgZspec 
-                    % -- it will be initialized with the first ROI drawn!
-                    img.(grps{ii}).(i_flds.(grps{ii}){jj})=zeros(dummysize);
+                elseif ~strcmp(i_flds.(grps{ii}){jj},'avgZspec') % img.zSpec.avgZspec will be 
+                    % initialized with the first ROI drawn!
+                    img.zSpec.avgZspec=zeros(dummysize);
                 end
             elseif strcmp(i_flds.(grps{ii}){jj},'fitImg') %catch any pools that weren't fit!
                 for kk=1:numel(i_flds.poolnames)
