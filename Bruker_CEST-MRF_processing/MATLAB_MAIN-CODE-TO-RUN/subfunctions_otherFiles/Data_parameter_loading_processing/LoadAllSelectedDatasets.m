@@ -88,10 +88,12 @@ end
 %% LOAD INTO MATLAB: WASSR
 if specifiedflg.WASSR
     disp('WASSR data: loading...')
-    [img.other.B0WASSR,~,~,info.WASSR]=WASSR_load_proc(...
+    [img.other.B0WASSR_Hz,~,~,info.WASSR]=WASSR_load_proc(...
         fullfile(scan_dirs.base_dir,scan_dirs.WASSR,'pdata','1'),parprefs,...
         PV360flg);
-    img.other.size=size(img.other.B0WASSR);
+    img.other.size=size(img.other.B0WASSR_Hz);
+    img.zSpec.B0WASSRppm=img.other.B0WASSR_Hz./info.WASSR.omega_0; %copy over to
+        % zSpec group, but in ppm, not Hz!
     disp('WASSR data loading and processing complete!')
 end
 

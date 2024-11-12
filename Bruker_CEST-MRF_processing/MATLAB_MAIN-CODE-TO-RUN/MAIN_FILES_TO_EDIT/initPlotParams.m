@@ -40,7 +40,7 @@ disp(['Loading plotting colormap bounds, labels, and image names from '...
 %
 cblims.MRF={[0.999 1],[0 Inf],[0 Inf],[0 Inf],[0 Inf]};
 cblims.other={[-100 100],[0 3],[0 1.5],cblims.MRF{4},cblims.MRF{5}};
-cblims.zSpec={[-0.15 0.15],[0 1.1],[0 1.1],cblims.other{1},[0 Inf]};
+cblims.zSpec={[-0.15 0.15],[0 1.1],[0 1.1],[-1 1],[0 Inf]};
 cblims.ErrorMaps={[-1 1]*60,[-1 1]*30,[-1 1]*4000,[-1 1]*30,[-1 1]*60,...
     [-1 1]*30,[-1 1]*4000,[-1 1]*30};
 
@@ -49,8 +49,8 @@ cblims.ErrorMaps={[-1 1]*60,[-1 1]*30,[-1 1]*4000,[-1 1]*30,[-1 1]*60,...
 i_flds.MRF={'dp','t1w','t2w','fs','ksw'};
 i_flds.ErrorMaps={'fsAbs','fsPct','kswAbs','kswPct','fsQUESPAbs','fsQUESPPct',...
     'kswQUESPAbs','kswQUESPPct'};
-i_flds.zSpec={'MTRimg','avgZspec','fitImg','B0WASSR','M0img'}; 
-i_flds.other={'B0WASSR','t1wIR','t2wMSME','fsQUESP','kswQUESP'};
+i_flds.zSpec={'MTRimg','avgZspec','fitImg','B0WASSRppm','M0img'}; 
+i_flds.other={'B0WASSR_Hz','t1wIR','t2wMSME','fsQUESP','kswQUESP'};
 
 % This is for z-spectral fitting pools
 i_flds.poolnames={'water','NOE','MT','OH','amine','amide'};
@@ -60,7 +60,7 @@ lbls.MRF.title={'MRF dot product loss','MRF T_1','MRF T_2',...
 lbls.MRF.cb={'','T_1 (s)','T_2 (s)','Concentration (mM)','k_{sw} (s^{-1})'};
 lbls.zSpec.title={'MTR_{asym}','Average z-spectrum','Fitted peak amplitude',...
     'WASSR \DeltaB_0','M_0 image'};
-lbls.zSpec.cb={'MTR_{asym}','','','\DeltaB_0 (Hz)',''};
+lbls.zSpec.cb={'MTR_{asym}','','','\DeltaB_0 (ppm)',''};
 lbls.other.title={'WASSR \DeltaB_0','T_1 map, RAREVTR','T_2 map, MSME',...
     'QUESP concentration (mM)','QUESP k_{sw} (s^{-1})'};
 lbls.other.cb={'\DeltaB_0 (Hz)','T_1 (s)','T_2 (s)','Concentration (mM)',...

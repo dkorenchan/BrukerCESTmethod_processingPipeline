@@ -123,12 +123,12 @@ switch typestr
             %sort lowest to highest
 
         omega_0=str2num(satpars{3});
-        omega_0=omega_0(1); %since an array is pulled in 
+        info.omega_0=omega_0(1); %since an array is pulled in 
         if PV360flg %NOTE: convert from ppm to Hz for PV360 
             info.w_offsetPPM=info.w_offset1;
-            info.w_offset1=info.w_offset1*omega_0;
+            info.w_offset1=info.w_offset1*info.omega_0;
         else
-            info.w_offsetPPM=info.w_offset1./omega_0;
+            info.w_offsetPPM=info.w_offset1./info.omega_0;
         end
 
         % Read in saturation power (in uT)
@@ -141,7 +141,7 @@ switch typestr
 
         % Sort imaging data based upon offsets
         image=rawdata(:,:,:,info.offsetAcqOrder);
-        image=permute(image,[2,1,3,4]);
+        image=squeeze(permute(image,[2,1,3,4]));
 %         % Read in and sort imaging data
 %         image=zeros(Matrix_X,Matrix_Y,niter-1);
 %         n1=niter-1;

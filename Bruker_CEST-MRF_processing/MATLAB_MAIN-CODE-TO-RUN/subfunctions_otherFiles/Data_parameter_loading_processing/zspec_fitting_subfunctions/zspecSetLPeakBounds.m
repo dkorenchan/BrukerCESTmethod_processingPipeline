@@ -16,8 +16,8 @@
 function x = zspecSetLPeakBounds()
 %Water pool
 x.water.st= [0.9    1.4     0       0       ];      % initial value
-x.water.lb= [0.02   0.3     0       0       ];%-pi/24  ];      % lower bound
-x.water.ub= [1.0    10      0       0       ];%pi/24   ];      % upper bound
+x.water.lb= [0.3    0.3     0       0       ];%-pi/24  ];      % lower bound
+x.water.ub= [1.0    3       0       0       ];%pi/24   ];      % upper bound
 
 % OH pool
 x.OH.st=    [0.01   1.2     0.8     0       ];      % initial value
@@ -52,6 +52,6 @@ x.NOE.ub=   [0.4    4.5     -3      0       ];      % upper bound
 % MT pool
 x.MT.st=    [0.1    20      0       0       ];  % initial value 
 x.MT.lb=    [0.0    10      -1      0       ];  % lower bound
-x.MT.ub=    [0.2    30      1       0       ];  % upper bound 
+x.MT.ub=    [0.5    50      1       0       ];  % upper bound 
 
 end

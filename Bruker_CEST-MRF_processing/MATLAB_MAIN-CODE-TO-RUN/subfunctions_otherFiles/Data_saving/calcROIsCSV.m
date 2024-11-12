@@ -56,8 +56,8 @@ switch grpstr
         QUESPExchangeRateStDev=zeros(nROI,1);    
         % Construct table of ROI values
         for iii=1:nROI
-            B0Mean(iii)=roi(iii).B0WASSR.mean;
-            B0StDev(iii)=roi(iii).B0WASSR.std;
+            B0Mean(iii)=roi(iii).B0WASSR_Hz.mean;
+            B0StDev(iii)=roi(iii).B0WASSR_Hz.std;
             T1Mean(iii)=roi(iii).t1wIR.mean;
             T1StDev(iii)=roi(iii).t1wIR.std;
             T2Mean(iii)=roi(iii).t2wMSME.mean;
@@ -83,6 +83,8 @@ switch grpstr
         fitNOEStDev=zeros(nROI,1);
         fitMTMean=zeros(nROI,1);
         fitMTStDev=zeros(nROI,1);        
+        B0Mean(iii)=roi(iii).B0WASSRppm.mean;
+        B0StDev(iii)=roi(iii).B0WASSRppm.std;
         % Construct table of ROI values
         for iii=1:nROI
             MTRasymMean(iii)=roi(iii).MTRimg.mean;
@@ -100,6 +102,6 @@ switch grpstr
         end
         tbl = table(ROIName,MTRasymMean,MTRasymStDev,fitOHMean,fitOHStDev,...
             fitAmineMean,fitAmineStDev,fitAmideMean,fitAmideStDev,fitNOEMean,...
-            fitNOEStDev,fitMTMean,fitMTStDev);   
+            fitNOEStDev,fitMTMean,fitMTStDev,B0Mean,B0StDev);   
 end
 end

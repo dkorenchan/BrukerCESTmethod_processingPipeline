@@ -21,8 +21,8 @@
 function x = zspecSetPVPeakBounds()
 %Water pool
 x.water.st= [0.9    .3  1.4     1   0       0       ];  % initial value
-x.water.lb= [0.5    0   0.3     1   -0.2    0       ];%-pi/24  ];  % lower bound
-x.water.ub= [1.0    1   10      2   0.2     0       ];%pi/24   ];  % upper bound
+x.water.lb= [0.3    0   0.3     1   -0.2    0       ];%-pi/24  ];  % lower bound
+x.water.ub= [1.0    1   3       2   0.2     0       ];%pi/24   ];  % upper bound
 
 % OH pool
 x.OH.st=    [0.01   .3  1.5     1   0.8     0       ];  % initial value 
@@ -47,5 +47,5 @@ x.NOE.ub=   [0.4    1   4.5     2   -3      0       ];  % upper bound
 % MT pool
 x.MT.st=    [0.1    .3  20      1   0       0       ];  % initial value 
 x.MT.lb=    [0.0    0   10      1   -1      0       ];  % lower bound
-x.MT.ub=    [0.3    1   30     2   1       0       ];  % upper bound 
+x.MT.ub=    [0.5    1   50     2   1       0       ];  % upper bound 
 end
