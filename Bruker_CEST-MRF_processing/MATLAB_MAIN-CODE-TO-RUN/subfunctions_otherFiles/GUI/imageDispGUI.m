@@ -517,11 +517,18 @@ for iii=1:nROI
 end   
 
 % If z-spectroscopic data specified, calculate the average z-spectrum
-% across all ROI voxels for each ROI
+% across all ROI voxels for each ROI, plus the fitted peaks
 if specifiedflg.zSpec
     for iii=1:nROI
         zimgReshape=reshape(img.zSpec.img,prod(size(img.zSpec.img,[1,2])),[]);
+%         for jjj=1:numel(i_flds.poolnames)
+%             pName=i_flds.poolnames{jjj};
+%             peaksImgReshape=reshape(img.zSpec.peakFits.(pName),...
+%                 prod(size(img.zSpec.img,[1,2])),[]);
+%             plotPeaks=mean(peaksImgReshape(maskReshape,:),1);
+%         end
         maskReshape=reshape(roi(iii).mask,prod(size(roi(iii).mask,[1,2])),[]);
+
         img.zSpec.avgZspec(iii,:)=mean(zimgReshape(maskReshape,:),1);
     end
 end

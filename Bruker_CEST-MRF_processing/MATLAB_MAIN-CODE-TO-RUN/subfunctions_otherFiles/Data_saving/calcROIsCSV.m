@@ -83,8 +83,8 @@ switch grpstr
         fitNOEStDev=zeros(nROI,1);
         fitMTMean=zeros(nROI,1);
         fitMTStDev=zeros(nROI,1);        
-        B0Mean(iii)=roi(iii).B0WASSRppm.mean;
-        B0StDev(iii)=roi(iii).B0WASSRppm.std;
+        B0Mean=zeros(nROI,1);
+        B0StDev=zeros(nROI,1);
         % Construct table of ROI values
         for iii=1:nROI
             MTRasymMean(iii)=roi(iii).MTRimg.mean;
@@ -98,7 +98,9 @@ switch grpstr
             fitNOEMean(iii)=roi(iii).fitImg.NOE.mean;
             fitNOEStDev(iii)=roi(iii).fitImg.NOE.std; 
             fitMTMean(iii)=roi(iii).fitImg.MT.mean;
-            fitMTStDev(iii)=roi(iii).fitImg.MT.std;             
+            fitMTStDev(iii)=roi(iii).fitImg.MT.std;
+            B0Mean(iii)=roi(iii).B0WASSRppm.mean;
+            B0StDev(iii)=roi(iii).B0WASSRppm.std;
         end
         tbl = table(ROIName,MTRasymMean,MTRasymStDev,fitOHMean,fitOHStDev,...
             fitAmineMean,fitAmineStDev,fitAmideMean,fitAmideStDev,fitNOEMean,...
