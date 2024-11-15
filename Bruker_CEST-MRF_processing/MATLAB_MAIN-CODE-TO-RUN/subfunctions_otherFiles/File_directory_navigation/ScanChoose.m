@@ -18,7 +18,7 @@
 %                       string) pertaining to each dataset type in input 
 %                       variable datatypes
 %
-function datadirs=ScanChoose(cfg,base_dir,scan_dirs,datatypes,PV360flg)
+function datadirs=ScanChoose(cfg,base_dir,scan_dirs,datatypes)
 %% MAIN FUNCTION
 scan_dirs=[{'Select:'};scan_dirs]; %add default option at beginning 
 

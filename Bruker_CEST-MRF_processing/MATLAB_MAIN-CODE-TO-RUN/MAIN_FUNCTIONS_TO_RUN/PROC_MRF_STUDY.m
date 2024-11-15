@@ -16,8 +16,6 @@
 function [img,roi] = PROC_MRF_STUDY(previmg,prevroi) 
 %% FUNCTION INITIALIZATION
 
-home=pwd;
-
 [configs,prefs]=initUserSettings();
 
 i_flds=initPlotParams;
@@ -47,8 +45,8 @@ if loadflg
     % Prompt user to choose the study directory, then each scan directory
     % pertaining to the desired datasets to process and analyze
     [base_dir,scan_dirs,PV360flg]=StudyLoad(configs);
-    datatypes={'MRF','QUESP','T1map','T2map','WASSR'};
-    datadirs=ScanChoose(configs,base_dir,scan_dirs,datatypes,PV360flg);
+    datatypes={'MRF','QUESP','T1map','T2map','WASSR','zSpec'};
+    datadirs=ScanChoose(configs,base_dir,scan_dirs,datatypes);
 
     % Identify any datasets which were not specified
     for ii=1:numel(datatypes)
@@ -85,14 +83,24 @@ end
 %%  DATA SAVING
 % Write table to .csv file
 if isfield(roi,'mask')
-    cd(configs.save_dir)
-    rtcsv = calcROIsCSV(roi,'MRF');
-    writetable(rtcsv,'MRFproc.csv','Delimiter',',');
-    disp('ROI data for MRF imaging written to MRFproc.csv')
-    rtcsv = calcROIsCSV(roi,'other');
-    writetable(rtcsv,'MRFproc_other.csv','Delimiter',',');  
-    disp('ROI data for other imaging data written to MRFproc_other.csv')
-    cd(home)
+    if isfield(img,'MRF')
+        rtcsv=calcROIsCSV(roi,'MRF');
+        writetable(rtcsv,fullfile(configs.save_dir,'MRFproc.csv'),...
+            'Delimiter',',');
+        disp('ROI data for MRF imaging written to MRFproc.csv')
+    end
+    if isfield(img,'other')
+        rtcsv=calcROIsCSV(roi,'other');
+        writetable(rtcsv,fullfile(configs.save_dir,'MRFproc_other.csv'),...
+            'Delimiter',',');  
+        disp('ROI data for other imaging data written to MRFproc_other.csv')
+    end
+    if isfield(img,'zSpec')
+        rtcsv=calcROIsCSV(roi,'zSpec');
+        writetable(rtcsv,fullfile(configs.save_dir,'MRFproc_zSpec.csv'),...
+            'Delimiter',',');  
+        disp('ROI data for z-spectroscopic imaging data written to MRFproc_zSpec.csv')
+    end
 end
 
 % Prompt user to save img and roi as .mat file

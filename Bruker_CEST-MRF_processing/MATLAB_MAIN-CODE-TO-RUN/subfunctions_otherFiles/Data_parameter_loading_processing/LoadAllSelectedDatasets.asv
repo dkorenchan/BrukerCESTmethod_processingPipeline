@@ -88,12 +88,10 @@ end
 %% LOAD INTO MATLAB: WASSR
 if specifiedflg.WASSR
     disp('WASSR data: loading...')
-    [img.other.B0WASSR_Hz,~,~,info.WASSR]=WASSR_load_proc(...
+    [img.other.B0WASSR,~,~,info.WASSR]=WASSR_load_proc(...
         fullfile(scan_dirs.base_dir,scan_dirs.WASSR,'pdata','1'),parprefs,...
         PV360flg);
-    img.other.size=size(img.other.B0WASSR_Hz);
-    img.zSpec.B0WASSRppm=img.other.B0WASSR_Hz./info.WASSR.omega_0; %copy over to
-        % zSpec group, but in ppm, not Hz!
+    img.other.size=size(img.other.B0WASSR);
     disp('WASSR data loading and processing complete!')
 end
 
@@ -132,9 +130,9 @@ if ~prod(cell2mat(struct2cell(specifiedflg)))
                     for kk=1:numel(i_flds.poolnames)
                         img.zSpec.fitImg.(i_flds.poolnames{kk})=zeros(dummysize);
                     end
-                elseif ~strcmp(i_flds.(grps{ii}){jj},'avgZspec') % avoid img.zSpec.avgZspec 
-                    % -- it will be initialized with the first ROI drawn!
-                    img.(grps{ii}).(i_flds.(grps{ii}){jj})=zeros(dummysize);
+                elseif ~strcmp(i_flds.(grps{ii}){jj},'avgZspec') % img.zSpec.avgZspec will be 
+                    % initialized with the first ROI drawn!
+                    img.zSpec.avgZspec=zeros(dummysize);
                 end
             elseif strcmp(i_flds.(grps{ii}){jj},'fitImg') %catch any pools that weren't fit!
                 for kk=1:numel(i_flds.poolnames)

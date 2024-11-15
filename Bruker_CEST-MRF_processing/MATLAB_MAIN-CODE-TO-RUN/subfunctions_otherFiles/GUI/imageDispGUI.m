@@ -43,7 +43,7 @@ function [img,roi]=imageDispGUI(img,roi,specifiedflg,scan_dirs,parprefs,...
 
 % Parameters for plotting: image names, labels, colorbars
 [i_flds,lbls,cblims]=initPlotParams;
-grps=fieldnames(i_flds);
+grps=fieldnames(img);
 
 roiidx=1;
 if isfield(roi,'name')
@@ -68,9 +68,15 @@ settings.dpMaskVal=0.999;
 % Set initial plotting group, based upon what was loaded
 if isfield(img,'MRF')
     plotgrp='MRF';
-else
+elseif isfield(img,'other')
     plotgrp='other';
+else
+    plotgrp='zSpec';
 end
+
+% Set initial z-spectroscopy display values
+selPool='amide'; %default fitted pool image to show
+MTRppm=3.5; %default MTR asymmetry ppm value to calculate
 
 % Screen size/resolution (for plotting)
 scrsz = get(groot,'ScreenSize');
@@ -96,17 +102,21 @@ uicontrol(bg1,'Style','checkbox','Position',[10 735 120 22],...
     'Value',settings.maskImgs,'String','Mask images using');
 uicontrol(bg1,'Style','text','Position',[30 710 90 30],...
     'String','dot-product loss');
-uicontrol(bg1,'Style','text','Position',[30 690 80 15],...
+uicontrol(bg1,'Style','text','Position',[30 695 80 15],...
     'String','Mask threshold:');
-nr=uicontrol(bg1,'Style','edit','Position',[30 670 80 20],...
+nr=uicontrol(bg1,'Style','edit','Position',[30 675 80 20],...
     'String',num2str(settings.dpMaskVal),'Tag','dpMaskVal',...
     'Callback',@editSettingVals);
 
 % Selection for which group of images to display
-uicontrol(bg1,'Style','text','Position',[5 625 160 15],...
+uicontrol(bg1,'Style','text','Position',[5 635 160 15],...
     'String','Active display group:');
-uicontrol(bg1,'Style','popupmenu','Position',[0 610 160 10],...
+uicontrol(bg1,'Style','popupmenu','Position',[0 620 160 10],...
     'String',grps,'Callback',@selDispGrp);
+uicontrol(bg1,'Style','text','Position',[0 595 160 15],...
+    'String','Active fitted pool map:');
+uicontrol(bg1,'Style','popupmenu','Position',[0 580 160 10],...
+    'String',i_flds.poolnames,'Callback',@selDispPool);
 
 % ROI creation
 uicontrol(bg1,'Style','text','Position',[30 535 80 15],...
@@ -154,6 +164,11 @@ uicontrol(bg1,'Style','pushbutton','Position',[20 40 100 60],...
 % checkboxes status
 checkBoxesEnable;
 
+% Calculate MTR asymmetry map for default value, if zSpec dataset specified
+if isfield(img,'zSpec')
+    img.zSpec.MTRimg=calcMTRmap(img.zSpec.img,img.zSpec.ppm,MTRppm);
+end
+
 plotAxImg; 
 if isfield(roi,'mask')
     calcROIs;
@@ -170,13 +185,14 @@ function plotAxImg
 % if exist('mask.mat','file')
 %     disp('Mask found for imaging data - loading...')
 %     load('mask.mat','mask');
-if settings.maskImgs %mask all MRF images using dot-product loss
+if strcmp(plotgrp,'MRF') && settings.maskImgs %mask all MRF images using dot-product loss
     mask.MRF=(img.MRF.dp>settings.dpMaskVal);
 else
-    mask.MRF=true(size(img.(plotgrp).(i_flds.(plotgrp){1})));
+    mask.(plotgrp)=true(img.(plotgrp).size);
 end
-mask.ErrorMaps=true(size(img.(plotgrp).(i_flds.(plotgrp){1})));
-mask.other=true(size(img.(plotgrp).(i_flds.(plotgrp){1})));
+% mask.ErrorMaps=true(size(img.(plotgrp).(i_flds.(plotgrp){1})));
+% mask.zSpec=true(size(img.(plotgrp).(i_flds.(plotgrp){1})));
+% mask.other=true(size(img.(plotgrp).(i_flds.(plotgrp){1})));
 set(si,'String','Loading...')
 pause(0.01) % ensures the status text above displays
 if strcmp(plotgrp,'ErrorMaps')
@@ -187,11 +203,11 @@ else
 end
 for iii = 1:length(i_flds.(plotgrp))
     % Plot image, making voxels outside ROIs black (if ErrorMaps)
-    nexttile([1 2]); imagesc(zeros([size(img.(plotgrp).(i_flds.(plotgrp){iii})),3]));
-    hold on;
+    nexttile([1 2]); 
     if strcmp(plotgrp,'ErrorMaps')
-        if contains(i_flds.(plotgrp){iii},'fs')
-            allROImask=zeros(size(img.(plotgrp).(i_flds.(plotgrp){iii})));
+        imagesc(zeros([img.(plotgrp).size,3])); hold on;
+        if contains(i_flds.ErrorMaps{iii},'fs')
+            allROImask=zeros(size(img.ErrorMaps.(i_flds.ErrorMaps{iii})));
             if isfield(roi,'nomConc')
                 for jjj=1:nROI           
                     if ~isempty(roi(jjj).nomConc)
@@ -204,32 +220,54 @@ for iii = 1:length(i_flds.(plotgrp))
         else
             allROImask=sum(reshape([roi.mask],[size(roi(1).mask),length(roi)]),3);
         end
-        ei=imagesc(img.(plotgrp).(i_flds.(plotgrp){iii}).*mask.ErrorMaps); ...
-            title(lbls.(plotgrp).title{iii},'FontSize',18);
+        ei=imagesc(img.ErrorMaps.(i_flds.ErrorMaps{iii}).*mask.ErrorMaps); ...
+            title(lbls.ErrorMaps.title{iii},'FontSize',18);
         % If QUESP error maps: use R^2 mask to mask out non-fitted values
-        if contains(i_flds.(plotgrp){iii},'QUESP')
+        if contains(i_flds.ErrorMaps{iii},'QUESP')
             set(ei,'AlphaData',allROImask.*img.other.RsqMask);
         else
             set(ei,'AlphaData',allROImask);
         end
         axis('equal','off');
-        cb=colorbar; clim(cblims.(plotgrp){iii}); cb.FontSize = 14;
-        cb.Label.String=lbls.(plotgrp).cb{iii}; cb.Label.FontSize=16;
+        cb=colorbar; clim(cblims.ErrorMaps{iii}); cb.FontSize = 14;
+        cb.Label.String=lbls.ErrorMaps.cb{iii}; cb.Label.FontSize=16;
         colormap(bluewhitered);
         hold off;
         if iii==4 %jump down to next plotting row
             nexttile; axis('off')
         end
     else
-        imagesc(img.(plotgrp).(i_flds.(plotgrp){iii}).*mask.(plotgrp)); ...
-            title(lbls.(plotgrp).title{iii},'FontSize',18);
-        axis('equal','off');
-        cb=colorbar; clim(cblims.(plotgrp){iii}); cb.FontSize = 14;
-        cb.Label.String=lbls.(plotgrp).cb{iii}; cb.Label.FontSize=16;
-        colormap default;
-        if isfield(roi,'coords') 
-            for jjj=1:length(roi)
-                drawpolygon('Position',roi(jjj).coords);
+        if strcmp(i_flds.(plotgrp){iii},'avgZspec') %plot spectrum, not image!
+            if isfield(img.zSpec,'avgZspec')
+                plot(img.zSpec.ppm,img.zSpec.avgZspec(roiidx,:));
+                title([lbls.zSpec.title{iii} ', ROI ' roi(roiidx).name],...
+                    'FontSize',18);
+                xlabel('Offset (ppm)'); ylabel('M_{sat}/M_0');
+                axis('square'); set(gca,'XDir','reverse');
+            else
+                axis('off');
+            end
+        else
+            if strcmp(i_flds.(plotgrp){iii},'fitImg') %display the fitted subimage!
+                imagesc(img.(plotgrp).fitImg.(selPool).*mask.(plotgrp)); 
+                title([lbls.(plotgrp).title{iii} ', ' selPool],'FontSize',18);                
+            else
+                imagesc(img.(plotgrp).(i_flds.(plotgrp){iii}).*mask.(plotgrp));
+                if strcmp(i_flds.(plotgrp){iii},'MTRimg')
+                    title([lbls.(plotgrp).title{iii} ', ' ...
+                        num2str(MTRppm,'%2.1f') ' ppm'],'FontSize',18);
+                else
+                    title(lbls.(plotgrp).title{iii},'FontSize',18);
+                end
+            end
+            axis('equal','off');
+            cb=colorbar; clim(cblims.(plotgrp){iii}); cb.FontSize = 14;
+            cb.Label.String=lbls.(plotgrp).cb{iii}; cb.Label.FontSize=16;
+            colormap default;
+            if isfield(roi,'coords') 
+                for jjj=1:length(roi)
+                    drawpolygon('Position',roi(jjj).coords);
+                end
             end
         end
         if iii==3 % add in another spacer plot
@@ -243,10 +281,17 @@ end
 
 % selDispGrp: Set active group of images to plot + display ROI values
 function selDispGrp(source,~)
-plotgrp = grps{source.Value};
+plotgrp=grps{source.Value};
 if isfield(roi,'mask')
     calcROIs;
 end
+plotAxImg;
+end
+
+
+% selDispPool: Set active fitted pool map to plot (for group zSpec)
+function selDispPool(source,~)
+selPool=i_flds.poolnames{source.Value};
 plotAxImg;
 end
 
@@ -298,6 +343,7 @@ if isfield(roi(roiidx),'nomExch')
 else
     set(ne,'String','Inf');
 end
+plotAxImg;
 end
 
 
@@ -470,6 +516,23 @@ for iii=1:nROI
     end
 end   
 
+% If z-spectroscopic data specified, calculate the average z-spectrum
+% across all ROI voxels for each ROI, plus the fitted peaks
+if specifiedflg.zSpec
+    for iii=1:nROI
+        zimgReshape=reshape(img.zSpec.img,prod(size(img.zSpec.img,[1,2])),[]);
+%         for jjj=1:numel(i_flds.poolnames)
+%             pName=i_flds.poolnames{jjj};
+%             peaksImgReshape=reshape(img.zSpec.peakFits.(pName),...
+%                 prod(size(img.zSpec.img,[1,2])),[]);
+%             plotPeaks=mean(peaksImgReshape(maskReshape,:),1);
+%         end
+        maskReshape=reshape(roi(iii).mask,prod(size(roi(iii).mask,[1,2])),[]);
+
+        img.zSpec.avgZspec(iii,:)=mean(zimgReshape(maskReshape,:),1);
+    end
+end
+
 % Construct table of ROI values
 if strcmp(plotgrp,'MRF')
     ProtonDensity=cell(nROI,1);
@@ -485,16 +548,36 @@ elseif strcmp(plotgrp,'other')
     T2=cell(nROI,1);
     QUESPConcentration=cell(nROI,1);
     QUESPExchangeRate=cell(nROI,1);
+elseif strcmp(plotgrp,'zSpec')
+    MTRasym=cell(nROI,1);
+    fitOH=cell(nROI,1);
+    fitAmine=cell(nROI,1);
+    fitAmide=cell(nROI,1);
+    fitNOE=cell(nROI,1);
+    fitMT=cell(nROI,1);
+    B0=cell(nROI,1);
 end
 for iii=1:nROI
     nn=numel(grps);
     for jjj=1:nn
         grp=grps{jjj};
         for kkk=1:length(i_flds.(grp))
-            vals=img.(grp).(i_flds.(grp){kkk})(roi(iii).mask);
-            vals=vals(vals~=0); %remove 0's
-            roi(iii).(i_flds.(grp){kkk}).mean=mean(vals);
-            roi(iii).(i_flds.(grp){kkk}).std=std(vals);
+            if ~strcmp(i_flds.(grp){kkk},'avgZspec')
+                if strcmp(i_flds.(grp){kkk},'fitImg')
+                    for lll=1:numel(i_flds.poolnames)
+                        pName=i_flds.poolnames{lll};
+                        vals=img.(grp).(i_flds.(grp){kkk}).(pName)(roi(iii).mask);
+                        vals=vals(vals~=0); %remove 0's
+                        roi(iii).(i_flds.(grp){kkk}).(pName).mean=mean(vals);
+                        roi(iii).(i_flds.(grp){kkk}).(pName).std=std(vals);
+                    end
+                else
+                    vals=img.(grp).(i_flds.(grp){kkk})(roi(iii).mask);
+                    vals=vals(vals~=0); %remove 0's
+                    roi(iii).(i_flds.(grp){kkk}).mean=mean(vals);
+                    roi(iii).(i_flds.(grp){kkk}).std=std(vals);
+                end
+            end
         end
     end
     if strcmp(plotgrp,'MRF')
@@ -511,8 +594,8 @@ for iii=1:nROI
         QUESP_ROIConcentration{iii}=[num2str(roi(iii).fsQUESP.ROIfit,'%3.1f') ' mM'];
         QUESP_ROIExchangeRate{iii}=[num2str(roi(iii).kswQUESP.ROIfit,'%5.0f') ' s^-1'];       
     elseif strcmp(plotgrp,'other')
-        B0{iii}=[num2str(roi(iii).B0WASSR.mean,'%2.2f') ' ' char(177) ' ' ...
-            num2str(roi(iii).B0WASSR.std,'%2.2f') ' Hz'];
+        B0{iii}=[num2str(roi(iii).B0WASSR_Hz.mean,'%3.2f') ' ' char(177) ' ' ...
+            num2str(roi(iii).B0WASSR_Hz.std,'%3.2f') ' Hz'];
         T1{iii}=[num2str(roi(iii).t1wIR.mean,'%2.2f') ' ' char(177) ' ' ...
             num2str(roi(iii).t1wIR.std,'%2.2f') ' s'];
         T2{iii}=[num2str(roi(iii).t2wMSME.mean,'%1.4f') ' ' char(177) ' ' ...
@@ -521,6 +604,21 @@ for iii=1:nROI
             num2str(roi(iii).fsQUESP.std,'%3.1f') ' mM'];
         QUESPExchangeRate{iii}=[num2str(roi(iii).kswQUESP.mean,'%5.0f') ' ' char(177) ' ' ...
             num2str(roi(iii).kswQUESP.std,'%5.0f') ' s^-1'];
+    elseif strcmp(plotgrp,'zSpec')
+        MTRasym{iii}=[num2str(roi(iii).MTRimg.mean,'%1.3f') ' ' char(177) ' ' ...
+            num2str(roi(iii).MTRimg.std,'%1.3f')];
+        fitOH{iii}=[num2str(roi(iii).fitImg.OH.mean,'%1.3f') ' ' char(177) ' ' ...
+            num2str(roi(iii).fitImg.OH.std,'%1.3f')];
+        fitAmine{iii}=[num2str(roi(iii).fitImg.amine.mean,'%1.3f') ' ' char(177) ' ' ...
+            num2str(roi(iii).fitImg.amine.std,'%1.3f')];
+        fitAmide{iii}=[num2str(roi(iii).fitImg.amide.mean,'%1.3f') ' ' char(177) ' ' ...
+            num2str(roi(iii).fitImg.amide.std,'%1.3f')];
+        fitNOE{iii}=[num2str(roi(iii).fitImg.NOE.mean,'%1.3f') ' ' char(177) ' ' ...
+            num2str(roi(iii).fitImg.NOE.std,'%1.3f')];
+        fitMT{iii}=[num2str(roi(iii).fitImg.MT.mean,'%1.3f') ' ' char(177) ' ' ...
+            num2str(roi(iii).fitImg.MT.std,'%1.3f')];
+        B0{iii}=[num2str(roi(iii).B0WASSRppm.mean,'%1.3f') ' ' char(177) ' ' ...
+            num2str(roi(iii).B0WASSRppm.std,'%1.3f') ' ppm'];        
     end
 end
 ROIName = {roi.name}';
@@ -529,6 +627,8 @@ if strcmp(plotgrp,'MRF')
         QUESP_ROIConcentration,QUESP_ROIExchangeRate);
 elseif strcmp(plotgrp,'other')
     rt = table(ROIName,B0,T1,T2,QUESPConcentration,QUESPExchangeRate);
+elseif strcmp(plotgrp,'zSpec')
+    rt = table(ROIName,MTRasym,fitOH,fitAmine,fitAmide,fitNOE,fitMT,B0);
 end
 clf(tfig);
 uitable(tfig,'Data',rt,'Position',[20 20 1000 300],'ColumnEditable',false);
