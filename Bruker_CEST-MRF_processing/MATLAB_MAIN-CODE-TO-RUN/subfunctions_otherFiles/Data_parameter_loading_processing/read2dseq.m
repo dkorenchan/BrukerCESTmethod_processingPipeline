@@ -142,19 +142,7 @@ switch typestr
         % Sort imaging data based upon offsets
         image=rawdata(:,:,:,info.offsetAcqOrder);
         image=squeeze(permute(image,[2,1,3,4]));
-%         % Read in and sort imaging data
-%         image=zeros(Matrix_X,Matrix_Y,niter-1);
-%         n1=niter-1;
-%         for i=1:nslices    
-%             for k=1:(round(n1/2)-1)
-%                 image(:,:,k)=rawdata(:,:,i,2*k)';
-%             end        
-%             image(:,:,round(n1/2))=rawdata(:,:,i,n1)';        
-%             for k=1:(round(n1/2)-1)
-%                 image(:,:,n1-k+1)=rawdata(:,:,i,2*k+1)';
-%             end       
-%             M0image=rawdata(:,:,i,1)'; 
-%         end
+        
     case 'quesp'
         % Read in saturation powers (in uT) and offsets (in Hz)        
         satpars=readPars(fullfile(pname,'..','..'),'method',...

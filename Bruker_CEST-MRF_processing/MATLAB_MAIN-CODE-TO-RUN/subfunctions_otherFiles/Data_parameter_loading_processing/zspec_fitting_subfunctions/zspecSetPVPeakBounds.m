@@ -45,7 +45,7 @@ x.NOE.lb=   [0.0    0   1       1   -4      0       ];  % lower bound
 x.NOE.ub=   [0.4    1   4.5     2   -3      0       ];  % upper bound 
 
 % MT pool
-x.MT.st=    [0.1    .3  20      1   0       0       ];  % initial value 
+x.MT.st=    [0.3    .3  20      1   0       0       ];  % initial value 
 x.MT.lb=    [0.0    0   10      1   -1      0       ];  % lower bound
-x.MT.ub=    [0.5    1   50     2   1       0       ];  % upper bound 
+x.MT.ub=    [0.8    1   50     2   1       0       ];  % upper bound 
 end

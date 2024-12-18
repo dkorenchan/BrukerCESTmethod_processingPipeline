@@ -36,80 +36,15 @@ zppars.water1st=false;
 
 
 %% Z-SPECTROSCOPY PROCESSING: B0 CORRECTION, FITTING
-% Perform B0 correction, if specified
-%DK: TO DO!
-
-% Set up fitting parameters, based upon which type of peaks
-if strcmp(zppars.peaktype,'Pseudo-Voigt')
-    disp('Performing Pseudo-Voigt peak fitting of z-spectra...')
-    npar=6; % # of parameters defining each Pseudo-Voigt peak
-    pfitvals=zspecSetPVPeakBounds;
-elseif strcmp(zppars.peaktype,'Lorentzian')
-    disp('Performing Lorentzian peak fitting of z-spectra...')
-    npar=4; % # of parameters defining each Lorentzian peak
-    pfitvals=zspecSetLPeakBounds;
-end
-
-% Check for water, NOE, and MT pools specified, in order to fit first (if
-% zppars.water1st=true)
-firstnames = zppars.pools(strcmp(zppars.pools,'water')|...
-    strcmp(zppars.pools,'NOE')|strcmp(zppars.pools,'MT'));            
-
+           
 % Reshape z-spectral data and SNR threshold mask, then select all voxels 
 % pertaining to SNR thresholding
 zImgSelVox=reshape(zImg,prod(size(zImg,[1,2])),[]);
 ThmaskIdxVec=find(reshape(Thmask,prod(size(Thmask,[1,2])),[]));
 zImgSelVox=zImgSelVox(ThmaskIdxVec,:);
 
-% Initialize variables to store fitted data in
-fittedAmpls=zeros(numel(zppars.pools),size(zImgSelVox,1));
-fittedPeaksIndiv=zeros([numel(zppars.pools),size(zImgSelVox)]);
-fittedPeaksAll=zeros(size(zImgSelVox));
-
-% Reduce broadcast variables for parallel loop 
 ppm=info.w_offsetPPM;
-pools=zppars.pools;
-nPools=numel(zppars.pools);
-water1stflg=zppars.water1st;
-
-% Start parallel loop for voxelwise fitting 
-tic;
-parfor ii=1:numel(ThmaskIdxVec)
-    zfit=1-squeeze(zImgSelVox(ii,:));
-
-%     % If zppars.phaseMTR=true, first add linear phase to the 
-%     % spectrum such that the signal amplitudes at each end of the 
-%     % spectrum are equal
-%     if zppars.phaseMTR
-%         linphase=lsqnonlin(@(x) zspecMTRphase(x,ppm,...
-%             1-squeeze(ZImgSelVox(ii,:))));
-%         MTR=(1-squeeze(ZImgSelVox(ii,:))).*exp(-1i)
-%     else
-%     end
-
-    % If zppars.water1st=true, fit for water, NOE, and MT pools using 
-    % negative ppm values only prior to fitting other peaks
-    if water1stflg
-        EPfirst=zspecMultiPeakFit(ppm,zfit,firstnames,pfitvals);
-    else
-        for jj=1:nPools
-            name=pools{jj};
-            EPfirst.(name)=NaN(npar,1);
-        end
-    end
-    
-    % Then, fit the rest of the peaks
-    [EP,~,~,full_fit,ind_fits]=zspecMultiPeakFit(ppm,zfit,pools,pfitvals,EPfirst);
-
-    % Store peak amplitudes plus fitted peak vectors, and reset fixvals
-    fittedPeaksAll(ii,:)=full_fit;
-    for jj=1:nPools
-        name=pools{jj};
-        fittedAmpls(jj,ii)=EP.(name)(1);
-        fittedPeaksIndiv(jj,ii,:)=ind_fits.(name);
-    end
-end
-toc;
+[fittedAmpls,fittedPeaksIndiv,fittedPeaksAll]=fitAllZspec(ppm,zImgSelVox,zppars);
 
 % Fill in output maps in vector format, then reshape into 2D maps
 for ii=1:numel(zppars.pools)

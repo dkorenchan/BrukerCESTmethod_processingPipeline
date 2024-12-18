@@ -41,6 +41,11 @@ else
     end
 end
 
+% If the directory contains a .txt list of scans, pull that up in 
+% separate fig; otherwise, if a PV360 study, generate it from the
+% internal list
+slfig=displayScanList(base_dir);
+
 % Initialize scan selection figure
 dfig=uifigure;
 uilabel(dfig,'Position',[10 220 400 40],'WordWrap','on',...
@@ -57,11 +62,6 @@ uibutton(dfig,'Position',[20 60 300 20],'Text','Continue',...
     'ButtonPushedFcn',@endDirSet);
 wl=uilabel(dfig,'Position',[20 20 400 40],'Text','','FontColor','r',...
     'WordWrap','on');
-
-% If the directory contains a .txt list of scans, pull that up in 
-% separate fig; otherwise, if a PV360 study, generate it from the
-% internal list
-slfig=displayScanList(base_dir);
 
 waitfor(dfig);
 
