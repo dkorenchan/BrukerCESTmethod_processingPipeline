@@ -101,10 +101,15 @@ end
 %% LOAD INTO MATLAB: Z-SPEC IMAGING
 if specifiedflg.zSpec
     disp('Z-spectroscopic imaging data: loading...')
+    try
+        B0map=img.zSpec.B0WASSRppm;
+    catch
+        B0map=[];
+    end
     [img.zSpec.img,img.zSpec.M0img,img.zSpec.fitImg,img.zSpec.peakFits,...
         info.zSpec]=zSpec_load_proc(...
-        fullfile(scan_dirs.base_dir,scan_dirs.zSpec,'pdata','1'),parprefs,...
-        PV360flg);
+        fullfile(scan_dirs.base_dir,scan_dirs.zSpec,'pdata','1'),B0map,...
+        parprefs,PV360flg);
     img.zSpec.size=size(img.zSpec.M0img);
     img.zSpec.ppm=info.zSpec.w_offsetPPM;
     disp('Z-spectroscopic imaging data loading and processing complete!')

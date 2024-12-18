@@ -8,7 +8,8 @@
 %                       ParaVision 360 format (default false)
 %
 %   OUTPUTS:    
-%       b0map       -   Matrix (double) containing the B0 map values
+%       b0map       -   Matrix (double) containing the B0 map values (in
+%                       Hz)
 %       m0map       -   Matrix (double) containing the amplitudes of the 
 %                       fitted Lorentzians
 %       noisemap    -   Matrix (double) containing the amplitudes of the 
