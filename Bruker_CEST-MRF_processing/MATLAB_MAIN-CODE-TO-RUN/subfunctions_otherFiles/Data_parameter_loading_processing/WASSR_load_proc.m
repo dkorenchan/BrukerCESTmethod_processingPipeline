@@ -38,7 +38,7 @@ close(fh);
 disp('WASSR data: thresholding images based upon SNR...')
 Noise=M0_wassr(Noise_mask>0);
 N=std(Noise);
-Thmask=(M0_wassr>10*N);
+Thmask=(M0_wassr>prefs.SNRthresh*N);
 
 % Apply SNR mask to images
 Mzb0 = MI_wassr.*repmat(Thmask,[1 1 size(MI_wassr,3)]);

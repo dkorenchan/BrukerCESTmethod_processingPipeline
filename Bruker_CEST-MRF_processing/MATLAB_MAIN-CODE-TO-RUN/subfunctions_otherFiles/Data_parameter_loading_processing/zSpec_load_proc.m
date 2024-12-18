@@ -50,7 +50,7 @@ Noise=M0img(Noise_mask>0);
 % N=std(Noise);
 % Thmask=(M0_wassr>N);
 N=mean(Noise);
-Thmask=(M0img>10*N);
+Thmask=(M0img>prefs.SNRthresh*N);
 
 % Apply SNR mask to images
 zImg=zImg.*repmat(Thmask,[1 1 size(zImg,3)]);

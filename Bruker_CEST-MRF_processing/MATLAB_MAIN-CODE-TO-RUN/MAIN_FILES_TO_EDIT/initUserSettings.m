@@ -60,4 +60,7 @@ prefs.QUESPfcn='Inverse'; %type of QUESP fitting to use (options: 'Regular',
     %'Inverse (default)', 'OmegaPlot') 
 prefs.RsqThreshold=0.95; %value of R^2 to use for thresholding QUESP voxelwise 
 % fitting maps 
+
+% WASSR/z-spectral imaging processing parameters
+prefs.SNRthresh=10; %minimum voxel SNR to keep for processing
 end
