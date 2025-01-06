@@ -112,13 +112,18 @@ if specifiedflg.zSpec
         parprefs,PV360flg);
     img.zSpec.size=size(img.zSpec.M0img);
     img.zSpec.ppm=info.zSpec.w_offsetPPM;
+    % Fill in dummy images of zeros for pools that weren't fit
+    for ii=1:numel(i_flds.poolnames)
+        if ~isfield(img.zSpec.fitImg,i_flds.poolnames{ii})
+            img.zSpec.fitImg.(i_flds.poolnames{ii})=zeros(img.zSpec.size);
+        end
+    end   
     disp('Z-spectroscopic imaging data loading and processing complete!')
 end
 
 
 %% DUMMY IMAGES FOR NONSELECTED DATASET TYPES
-% ID which image groups ('MRF','zSpec','other') were specified, and ONLY
-% generate dummy images to fill in the gaps for these specified groups!
+% Generate dummy images to fill in any unspecified dataset images
 grps=fieldnames(img);
 
 if ~prod(cell2mat(struct2cell(specifiedflg))) 
@@ -140,14 +145,16 @@ if ~prod(cell2mat(struct2cell(specifiedflg)))
                 elseif ~strcmp(i_flds.(grps{ii}){jj},'avgZspec') % avoid img.zSpec.avgZspec 
                     % -- it will be initialized with the first ROI drawn!
                     img.(grps{ii}).(i_flds.(grps{ii}){jj})=zeros(dummysize);
-                end
-            elseif strcmp(i_flds.(grps{ii}){jj},'fitImg') %catch any pools that weren't fit!
-                for kk=1:numel(i_flds.poolnames)
-                    if ~isfield(img.zSpec.fitImg,i_flds.poolnames{kk})
-                        img.zSpec.fitImg.(i_flds.poolnames{kk})=zeros(dummysize);
-                    end
-                end                
+                end               
             end
         end
     end
+end
+
+% Also generate dummy images for error maps
+img.ErrorMaps.size=img.MRF.size;
+dummysize=img.ErrorMaps.size;
+for ii=1:numel(i_flds.ErrorMaps)
+    img.ErrorMaps.(i_flds.ErrorMaps{ii})=zeros(dummysize);
+end
 end
