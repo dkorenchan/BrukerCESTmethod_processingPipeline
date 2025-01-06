@@ -14,8 +14,10 @@
 %                       groups
 %
 function [i_flds,lbls,cblims] = initPlotParams()
-disp(['Loading plotting colormap bounds, labels, and image names from '...
-    'file initPlotParams.m...'])
+if nargout==3
+    disp(['Loading plotting colormap bounds, labels, and image names from '...
+        'file initPlotParams.m...'])
+end
 
 % You will probably want to change the values below at some point! These 
 % are organized in the following way:
