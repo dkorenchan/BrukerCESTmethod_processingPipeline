@@ -44,7 +44,11 @@ end
 % If the directory contains a .txt list of scans, pull that up in 
 % separate fig; otherwise, if a PV360 study, generate it from the
 % internal list
-slfig=displayScanList(base_dir);
+try
+    slfig=displayScanList(base_dir);
+catch
+    disp('Whoops! Protocol list could not be loaded...')
+end
 
 % Initialize scan selection figure
 dfig=uifigure;
