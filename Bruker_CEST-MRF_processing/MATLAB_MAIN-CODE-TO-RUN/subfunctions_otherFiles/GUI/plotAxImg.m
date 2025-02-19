@@ -75,19 +75,27 @@ for iii = 1:length(i_flds.(settings.plotgrp))
             if isfield(img.zSpec,'avgZspec')
                 scatter(img.zSpec.ppm,img.zSpec.avgZspec.all.spec(settings.roiidx,:),...
                     'LineWidth',1);
+                leglbls={'Raw data'};
                 hold on; 
                 
                 % Plot MTR asymmetry
-                plot(img.zSpec.MTRppm,img.zSpec.avgZspec.all.MTRasym(settings.roiidx,:),...
-                    'r--*','MarkerSize',4);
+                if settings.showMTRasymflg
+                    plot(img.zSpec.MTRppm,img.zSpec.avgZspec.all.MTRasym(settings.roiidx,:),...
+                        'r--*','MarkerSize',4);
+                    leglbls=[leglbls;{'MTR_{asym}'}];
+                end
 
                 % Plot fitted pools
-                pools=fieldnames(img.zSpec.avgZspec);
-                for jjj=1:numel(pools)
-                    pool=pools{jjj};
-                    plot(img.zSpec.ppm,img.zSpec.avgZspec.(pool).fitSpec(settings.roiidx,:));
+                if settings.showFitsflg
+                    pools=fieldnames(img.zSpec.avgZspec);
+                    for jjj=1:numel(pools)
+                        pool=pools{jjj};
+                        plot(img.zSpec.ppm,img.zSpec.avgZspec.(pool).fitSpec(settings.roiidx,:));
+                    end
+                    leglbls=[leglbls;pools];
                 end
-                legend([{'Raw data'};{'MTR_{asym}'};pools],'Location','southeast');
+
+                legend(leglbls,'Location','southeast');
                 title([lbls.zSpec.title{iii} ', ROI ' roi(settings.roiidx).name],...
                     'FontSize',18);
                 xlabel('Offset (ppm)'); ylabel('M_{sat}/M_0');

@@ -60,6 +60,8 @@ roi(1).useNomExchflg=false;
 % Set display options
 settings.maskImgs=true;
 settings.dpMaskVal=0.999;
+settings.showMTRasymflg=true;
+settings.showFitsflg=true;
 
 % Set initial plotting group, based upon what was loaded
 if isfield(img,'MRF')
@@ -120,6 +122,12 @@ uicontrol(bg1,'Style','text','Position',[5 635 160 15],...
     'String','MTRasym ppm value:');
 map=uicontrol(bg1,'Style','edit','Position',[30 610 80 20],...
     'String',num2str(settings.MTRppm),'Callback',@setMTRasymPpm);
+smaf=uicontrol(bg1,'Style','checkbox','Position',[10 585 120 22],...
+    'Tag','showMTRasymflg','Callback',@toggleSettingFlags,'Visible',nROI>0,...
+    'Value',settings.showMTRasymflg,'String','Show MTRasym plot');
+sff=uicontrol(bg1,'Style','checkbox','Position',[10 565 120 22],...
+    'Tag','showFitsflg','Callback',@toggleSettingFlags,'Visible',nROI>0,...
+    'Value',settings.showFitsflg,'String','Show pool fits');
 
 % ROI creation
 uicontrol(bg1,'Style','text','Position',[30 535 80 15],...
@@ -227,8 +235,10 @@ else
 end
 nROI=nROI+1;
 % Make items in GUI pertaining to ROIs visible
-if nROI > 0
+if nROI>0
     set(rbg,'Visible','on');
+    set(smaf,'Visible','on');
+    set(sff,'Visible','on');
 end
 newname=['ROI' num2str(nROI+1)];
 set(nr,'String',newname);
