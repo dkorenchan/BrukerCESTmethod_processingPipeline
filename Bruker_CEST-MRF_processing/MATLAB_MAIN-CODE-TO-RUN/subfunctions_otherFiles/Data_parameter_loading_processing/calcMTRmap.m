@@ -25,8 +25,13 @@
 %                           identified
 %       MTRppm          -   Vector of positive ppm values pertaining to the
 %                           (now-reordered) MTRmap spectral dimension
+%       sel_ppm_true    -   (if sel_ppm specified as input) Number
+%                           pertaining to actual ppm value used to 
+%                           calculate MTR asymmetry map. If sel_ppm not
+%                           found in ppmOffsets, it will return the 1st 
+%                           value larger than sel_ppm in ppmOffsets
 %
-function [MTRmap,MTRppm]=calcMTRmap(zspecImgData,ppmOffsets,sel_ppm)
+function [MTRmap,MTRppm,sel_ppm_true]=calcMTRmap(zspecImgData,ppmOffsets,sel_ppm)
 % DK TO DO: Update to be compatible w/ computing the MTR profile for the
 % ROI-average zspec: if/then loop for 2D vs 3D array; and make sel_ppm an
 % optional input 
@@ -51,8 +56,19 @@ zspecImgData=zspecImgData(:,sortIdx);
 % Determine the z-spec values for the positive and negative ppm values
 if selppmflg
     % Find the indices pertaining to positive and negative sel_ppm
-    zImgPos=zspecImgData(:,abs(sel_ppm-ppmOffsets)==min(abs(sel_ppm-ppmOffsets)));
-    zImgNeg=zspecImgData(:,abs(-sel_ppm-ppmOffsets)==min(abs(-sel_ppm-ppmOffsets)));
+    selPpmPosIdx=find(abs(sel_ppm-ppmOffsets)==min(abs(sel_ppm-ppmOffsets)));
+    if length(selPpmPosIdx)>1 %select the larger abs value
+        selPpmPosIdx=selPpmPosIdx(end);
+    end
+    selPpmNegIdx=find(abs(-sel_ppm-ppmOffsets)==min(abs(-sel_ppm-ppmOffsets)));
+    if length(selPpmNegIdx)>1 %select the larger abs value
+        selPpmNegIdx=selPpmNegIdx(1);
+    end
+
+    zImgPos=zspecImgData(:,selPpmPosIdx);
+    zImgNeg=zspecImgData(:,selPpmNegIdx);
+
+    sel_ppm_true=ppmOffsets(selPpmPosIdx);
 else
     % Go through the positive offsets and find the negative offset that is
     % closest in magnitude to each
@@ -63,9 +79,12 @@ else
         searchVec=abs(ppmOffsets(ppmOffsets<0)+ppmOffsets(ppmPosIdxPaired(ii)));
         ppmNegIdxPaired(ii)=find(searchVec==min(searchVec)); %find value closest to zero
     end
+    
     % Finally, ID the positive and negative offset Z-values
     zImgPos=zspecImgData(:,ppmPosIdxPaired);
     zImgNeg=zspecImgData(:,ppmNegIdxPaired);
+
+    sel_ppm_true=[]; %no value returned if no sel_ppm specified
 end
 
 % Calculate the MTR asymmetry (and corresponding positive ppm offsets)

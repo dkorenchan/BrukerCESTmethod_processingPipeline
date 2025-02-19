@@ -88,11 +88,22 @@ tfig=uifigure('Position',[0 0 1250 500]);
 drawfig =figure('Position',[0,round(scrsz(4)*1/6),round(scrsz(3)*2/3),...
     round(scrsz(4)*3/4)]*sppi,'Units','inches');
 
-bg1 = uipanel('Position',[0 .1 .1 .9]);
+bg1 = uipanel('Position',[0 0 .1 1]);
 
 % Controls for ROI editing + display
 
+% Selection for which group of images to display
+uicontrol(bg1,'Style','text','Position',[5 835 160 15],...
+    'String','Active display group:');
+uicontrol(bg1,'Style','popupmenu','Position',[0 820 160 10],...
+    'String',grps,'Callback',@selDispGrp);
+uicontrol(bg1,'Style','text','Position',[0 795 160 15],...
+    'String','Active fitted pool map:');
+uicontrol(bg1,'Style','popupmenu','Position',[0 780 160 10],...
+    'String',i_flds.poolnames,'Callback',@selDispPool);
+
 % Other display items
+% MRF
 uicontrol(bg1,'Style','checkbox','Position',[10 735 120 22],...
     'Callback',@toggleSettingFlags,'Tag','maskImgs',...
     'Value',settings.maskImgs,'String','Mask images using');
@@ -104,15 +115,11 @@ nr=uicontrol(bg1,'Style','edit','Position',[30 675 80 20],...
     'String',num2str(settings.dpMaskVal),'Tag','dpMaskVal',...
     'Callback',@editSettingVals);
 
-% Selection for which group of images to display
+% Z-spectroscopic imaging
 uicontrol(bg1,'Style','text','Position',[5 635 160 15],...
-    'String','Active display group:');
-uicontrol(bg1,'Style','popupmenu','Position',[0 620 160 10],...
-    'String',grps,'Callback',@selDispGrp);
-uicontrol(bg1,'Style','text','Position',[0 595 160 15],...
-    'String','Active fitted pool map:');
-uicontrol(bg1,'Style','popupmenu','Position',[0 580 160 10],...
-    'String',i_flds.poolnames,'Callback',@selDispPool);
+    'String','MTRasym ppm value:');
+map=uicontrol(bg1,'Style','edit','Position',[30 610 80 20],...
+    'String',num2str(settings.MTRppm),'Callback',@setMTRasymPpm);
 
 % ROI creation
 uicontrol(bg1,'Style','text','Position',[30 535 80 15],...
@@ -123,7 +130,7 @@ uicontrol(bg1,'Style','pushbutton','Position',[0 480 140 30],...
     'String','Draw new ROI on slice','Callback',@newROI);
 
 % ROI selection and editing
-rbg=uibuttongroup('Position',[.005 .28 .09 .37],...
+rbg=uibuttongroup('Position',[.005 .14 .09 .36],...
     'Visible',nROI>0);
 uicontrol(rbg,'Style','text','Position',[20 295 80 15],...
     'String','Active ROI:');
@@ -149,11 +156,11 @@ chkbxHandles.neet=uicontrol(rbg,'Style','text','Position',[10 3 110 30],...
     'String','exchange rates for error maps','Enable','off');
 
 % Status indicator
-si=uicontrol(bg1,'Style','text','Position',[0 110 150 40],'String','',...
+si=uicontrol(bg1,'Style','text','Position',[0 70 150 40],'String','',...
     'FontSize',18,'FontWeight','bold');
 
 % Finish button
-uicontrol(bg1,'Style','pushbutton','Position',[20 40 100 60],...
+uicontrol(bg1,'Style','pushbutton','Position',[20 10 100 60],...
     'String','FINISH AND SAVE','Callback',@finishFig);
 
 % Detect how to initially set QUESP conc fix and nominal exch use 
@@ -162,8 +169,10 @@ roi=checkBoxesEnable(roi,chkbxHandles);
 
 % Calculate MTR asymmetry map for default value, if zSpec dataset specified
 if isfield(img,'zSpec')
-    [img.zSpec.MTRimg,img.zSpec.MTRppm]=calcMTRmap(img.zSpec.img,...
-        img.zSpec.ppm,settings.MTRppm);
+    [img.zSpec.MTRimg,img.zSpec.MTRppm,settings.MTRppm]...
+        =calcMTRmap(img.zSpec.img,img.zSpec.ppm,settings.MTRppm);
+    % Update uicontrol value based upon the actual ppm value used for MTRasym
+    set(map,'String',num2str(settings.MTRppm));
 end
 
 % plotAxImg(img,roi,settings,si); 
@@ -294,6 +303,19 @@ roi(1).useNomExchflg=~roi(1).useNomExchflg;
 plotAxImg(img,roi,settings,si)
 end
 
+
+% setMTRasymPpm: Changes the ppm value for the displayed MTR asymmetry map
+% (img.zSpec.MTRimg), then recalculate and display
+function setMTRasymPpm(src,~)
+settings.MTRppm=str2double(src.String);
+if isfield(img,'zSpec')
+    [img.zSpec.MTRimg,img.zSpec.MTRppm,settings.MTRppm]...
+        =calcMTRmap(img.zSpec.img,img.zSpec.ppm,settings.MTRppm);
+end
+% Update uicontrol value based upon the actual ppm value used for MTRasym
+set(map,'String',num2str(settings.MTRppm));
+plotAxImg(img,roi,settings,si); 
+end
 
 % toggleSettingFlags: Toggles flags in variable settings
 function toggleSettingFlags(src,~)
