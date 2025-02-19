@@ -322,6 +322,11 @@ if isfield(img,'zSpec')
     [img.zSpec.MTRimg,img.zSpec.MTRppm,settings.MTRppm]...
         =calcMTRmap(img.zSpec.img,img.zSpec.ppm,settings.MTRppm);
 end
+% Recalculate ROI statistics, if any ROIs
+if isfield(roi,'mask')
+    [img,roi]=calcROIs(img,roi,settings,specifiedflg,scan_dirs,parprefs,...
+        PV360flg,tfig);
+end
 % Update uicontrol value based upon the actual ppm value used for MTRasym
 set(map,'String',num2str(settings.MTRppm));
 plotAxImg(img,roi,settings,si); 
