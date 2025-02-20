@@ -40,10 +40,10 @@ configs.bashfn='.zshrc'; %system file in home directory containing conda alias
 
 % Name of file to search for and load for MRF, which contains parameters
 % maps outputted from Python scripts (make sure it ends with .mat)
-% configs.MRFfn='quant_maps.mat';
+configs.MRFfn='quant_maps.mat';
 % configs.MRFfn='quant_maps_sim[y,-x,-y].mat';
 % configs.MRFfn='quant_maps_T1T2Fixed.mat';
-configs.MRFfn='quant_maps_logKb_T1T2Fixed.mat'; 
+% configs.MRFfn='quant_maps_logKb_T1T2Fixed.mat'; 
 
 % For MATCH_MRF_MULTI: Substrings pertaining to schedule filename that are 
 % NOT MRF datasets (used to eliminate non-MRF fp(SL)_EPI datasets from 
@@ -62,5 +62,5 @@ prefs.RsqThreshold=0.95; %value of R^2 to use for thresholding QUESP voxelwise
 % fitting maps 
 
 % WASSR/z-spectral imaging processing parameters
-prefs.SNRthresh=10; %minimum voxel SNR to keep for processing
+prefs.SNRthresh=3.5; %minimum voxel SNR to keep for processing
 end
