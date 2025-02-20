@@ -33,9 +33,10 @@ if strcmp(settings.plotgrp,'ErrorMaps')
 else
     tiledlayout(2,6);
 end
+t=gobjects(length(i_flds.(settings.plotgrp)));
 for iii = 1:length(i_flds.(settings.plotgrp))
     % Plot image, making voxels outside ROIs black (if ErrorMaps)
-    nexttile([1 2]); 
+    t(iii)=nexttile([1 2]); 
     if strcmp(settings.plotgrp,'ErrorMaps')
         imagesc(zeros([img.(settings.plotgrp).size,3])); hold on;
         if isfield(roi,'mask')
@@ -68,7 +69,7 @@ for iii = 1:length(i_flds.(settings.plotgrp))
             hold off;
         end
         if iii==4 %jump down to next plotting row
-            nexttile; axis('off')
+            t(iii)=nexttile; axis('off')
         end
     else
         if strcmp(i_flds.(settings.plotgrp){iii},'avgZspec') %plot spectrum, not image!
@@ -125,7 +126,11 @@ for iii = 1:length(i_flds.(settings.plotgrp))
             axis('equal','off');
             cb=colorbar; clim(cblims.(settings.plotgrp){iii}); cb.FontSize = 14;
             cb.Label.String=lbls.(settings.plotgrp).cb{iii}; cb.Label.FontSize=16;
-            colormap default;
+            if strcmp(i_flds.(settings.plotgrp){iii},'M0img') %plot M0 image w/ gray colormap
+                colormap(t(iii),'gray');
+            else
+                colormap(t(iii),'default');
+            end
             if isfield(roi,'coords') 
                 for jjj=1:length(roi)
                     drawpolygon('Position',roi(jjj).coords);
@@ -133,7 +138,7 @@ for iii = 1:length(i_flds.(settings.plotgrp))
             end
         end
         if iii==3 % add in another spacer plot
-            nexttile; axis('off')
+            t(iii)=nexttile; axis('off')
         end
     end
 end
