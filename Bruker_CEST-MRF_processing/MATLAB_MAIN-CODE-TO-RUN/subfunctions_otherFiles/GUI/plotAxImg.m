@@ -58,7 +58,11 @@ for iii = 1:length(i_flds.(settings.plotgrp))
                 title(lbls.ErrorMaps.title{iii},'FontSize',18);
             % If QUESP error maps: use R^2 mask to mask out non-fitted values
             if contains(i_flds.ErrorMaps{iii},'QUESP')
-                set(ei,'AlphaData',allROImask.*img.other.RsqMask);
+                try
+                    set(ei,'AlphaData',allROImask.*img.other.RsqMask);
+                catch
+                    set(ei,'AlphaData',allROImask);
+                end
             else
                 set(ei,'AlphaData',allROImask);
             end

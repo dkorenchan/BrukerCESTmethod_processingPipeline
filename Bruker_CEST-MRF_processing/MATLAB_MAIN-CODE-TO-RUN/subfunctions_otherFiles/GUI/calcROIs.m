@@ -80,6 +80,19 @@ if specifiedflg.QUESP
     end
 else
     for iii=1:nROI
+        % See if nominal exchange rates were specified for all ROIs, and
+        % that user specified to use them for error maps. If so, then
+        % calculate the MRF error maps
+        if isfield(roi,'nomExch')
+            if sum(~isinf([roi.nomExch])&~isnan([roi.nomExch]))==nROI && ...
+                    roi(1).useNomExchflg
+                true_ksp=roi(iii).nomExch;
+                subimg=(img.MRF.ksw-true_ksp).*roi(iii).mask;
+                img.ErrorMaps.kswAbs=img.ErrorMaps.kswAbs+subimg;
+                img.ErrorMaps.kswPct=img.ErrorMaps.kswPct+...
+                    subimg./true_ksp*100;
+            end
+        end
         roi(iii).fsQUESP.ROIfit=0;
         roi(iii).kswQUESP.ROIfit=0;
     end
