@@ -30,7 +30,7 @@ matchdirs=FindScansByType(base_dir,data_dirs,configs);
 % If the directory contains a .txt list of scans, pull that up in 
 % separate fig; otherwise, if a PV360 study, generate it from the
 % internal list
-slfig=displayScanList(base_dir,PV360flg);
+slfig=displayScanList(base_dir);
 
 prompt = [  {'Please select which of the discovered MRF data'};...
             {'directories to perform dictionary matching on.'};...
