@@ -92,6 +92,9 @@ if specifiedflg.WASSR
         fullfile(scan_dirs.base_dir,scan_dirs.WASSR,'pdata','1'),parprefs,...
         PV360flg);
     img.other.size=size(img.other.B0WASSR_Hz);
+    img.zSpec.size=size(img.other.B0WASSR_Hz); %just in case no z-spec data 
+        %are loaded, to prevent an error! This is b/c WASSR shows up in the
+        %"zspec" plotting group as well as "other"
     img.zSpec.B0WASSRppm=img.other.B0WASSR_Hz./info.WASSR.omega_0; %copy over to
         % zSpec group, but in ppm, not Hz!
     disp('WASSR data loading and processing complete!')
@@ -152,7 +155,13 @@ if ~prod(cell2mat(struct2cell(specifiedflg)))
 end
 
 % Also generate dummy images for error maps
-img.ErrorMaps.size=img.MRF.size;
+if sum(strcmp(grps,'MRF'))>0
+    img.ErrorMaps.size=img.MRF.size;
+elseif sum(strcmp(grps,'other'))>0
+    img.ErrorMaps.size=img.other.size;
+else
+    img.ErrorMaps.size=img.(grps{1}).size;
+end
 dummysize=img.ErrorMaps.size;
 for ii=1:numel(i_flds.ErrorMaps)
     img.ErrorMaps.(i_flds.ErrorMaps{ii})=zeros(dummysize);

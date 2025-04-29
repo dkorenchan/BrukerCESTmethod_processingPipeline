@@ -176,7 +176,7 @@ uicontrol(bg1,'Style','pushbutton','Position',[20 10 100 60],...
 roi=checkBoxesEnable(roi,chkbxHandles);
 
 % Calculate MTR asymmetry map for default value, if zSpec dataset specified
-if isfield(img,'zSpec')
+if isfield(img.zSpec,'img')
     [img.zSpec.MTRimg,img.zSpec.MTRppm,settings.MTRppm]...
         =calcMTRmap(img.zSpec.img,img.zSpec.ppm,settings.MTRppm);
     % Update uicontrol value based upon the actual ppm value used for MTRasym
@@ -318,7 +318,7 @@ end
 % (img.zSpec.MTRimg), then recalculate and display
 function setMTRasymPpm(src,~)
 settings.MTRppm=str2double(src.String);
-if isfield(img,'zSpec')
+if isfield(img.zSpec,'img')
     [img.zSpec.MTRimg,img.zSpec.MTRppm,settings.MTRppm]...
         =calcMTRmap(img.zSpec.img,img.zSpec.ppm,settings.MTRppm);
 end
