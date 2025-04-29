@@ -100,7 +100,7 @@ switch fitmode
         % vs negative offset), where the signal isn't significantly higher 
         % than the M0 image, and where the T1 fitting returned a 
         % significant value
-        threshmap=prod((QUESPpos<1.*QUESPneg) & (QUESPpos<1.1) & (QUESPneg<1.1),...
+        threshmap=prod((QUESPpos<1.05.*QUESPneg) & (QUESPpos<1.1) & (QUESPneg<1.1),...
             3,'native').*(T1map>0);
 
         % MTRasymvec=reshape(MTRasym,[],size(MTRasym,3));

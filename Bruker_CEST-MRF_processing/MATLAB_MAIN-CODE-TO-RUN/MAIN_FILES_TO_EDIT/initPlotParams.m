@@ -24,13 +24,18 @@ end
 %       .MRF: colorbar limits for   {[MRF dot product loss (unitless)],
 %                                    [MRF T1 values (s)],
 %                                    [MRF T2 values (s)],
-%                                    [MRF proton volume fractions (unitless)],
+%                                    [MRF concentration (mM)],
 %                                    [MRF exchange rate (s^-1)]}
 %       .other: colorbar limits for {[WASSR B0 map (Hz)],
 %                                    [T1 map (s)],
 %                                    [T2 map (s)],
-%                                    [QUESP proton volume fractions (unitless)],
+%                                    [QUESP concentration (mM)],
 %                                    [QUESP exchange rate (s^-1)]}
+%       .zspec: colorbar limits for {[MTR asymmetry],
+%                                    [z-spectrum],
+%                                    [voxelwise z-spectral peak fits],
+%                                    [WASSR B0 map (ppm)],
+%                                    [M0 image]}
 %       .ErrorMaps: cb lims for     {[MRF raw concentration error (mM)],
 %                                    [MRF % concentration error (%)],
 %                                    [MRF raw exchange rate error (s^-1)],
@@ -40,11 +45,11 @@ end
 %                                    [QUESP raw exchange rate error (s^-1)],
 %                                    [QUESP % exchange rate error (%)]}
 %
-cblims.MRF={[0.999 1],[0 Inf],[0 Inf],[0 Inf],[0 Inf]};
+cblims.MRF={[0.997 1],[0 Inf],[0 Inf],[0 Inf],[0 Inf]};
 cblims.other={[-100 100],[0 3],[0 1.5],cblims.MRF{4},cblims.MRF{5}};
-cblims.zSpec={[-0.01 0.25],[0 1.1],[0 1.1],[-1 1],[0 Inf]};
-cblims.ErrorMaps={[-1 1]*60,[-1 1]*30,[-1 1]*4000,[-1 1]*30,[-1 1]*60,...
-    [-1 1]*30,[-1 1]*4000,[-1 1]*30};
+cblims.zSpec={[-0.01 0.15],[0 1.1],[0 .2],[-1 1],[0 Inf]};
+cblims.ErrorMaps={[-1 1]*8,[-1 1]*30,[-1 1]*2000,[-1 1]*75,[-1 1]*8,...
+    [-1 1]*30,[-1 1]*2000,[-1 1]*75};
 
 % You probably DO NOT want to change anything below here!
 %
