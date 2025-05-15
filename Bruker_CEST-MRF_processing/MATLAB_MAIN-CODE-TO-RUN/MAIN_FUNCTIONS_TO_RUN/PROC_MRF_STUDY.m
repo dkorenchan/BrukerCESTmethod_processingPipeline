@@ -95,11 +95,13 @@ if isfield(roi,'mask')
             'Delimiter',',');  
         disp('ROI data for other imaging data written to MRFproc_other.csv')
     end
-    if isfield(img.zSpec,'img')
-        rtcsv=calcROIsCSV(roi,'zSpec');
-        writetable(rtcsv,fullfile(configs.save_dir,'MRFproc_zSpec.csv'),...
-            'Delimiter',',');  
-        disp('ROI data for z-spectroscopic imaging data written to MRFproc_zSpec.csv')
+    if isfield(img,'zSpec')
+        if isfield(img.zSpec,'img')
+            rtcsv=calcROIsCSV(roi,'zSpec');
+            writetable(rtcsv,fullfile(configs.save_dir,'MRFproc_zSpec.csv'),...
+                'Delimiter',',');  
+            disp('ROI data for z-spectroscopic imaging data written to MRFproc_zSpec.csv')
+        end
     end
 end
 

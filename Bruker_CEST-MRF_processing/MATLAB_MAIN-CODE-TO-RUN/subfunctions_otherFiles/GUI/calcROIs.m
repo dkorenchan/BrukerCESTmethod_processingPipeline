@@ -108,10 +108,12 @@ for iii=1:nROI
     if isfield(roi,'nomConc')
         if ~isempty(roi(iii).nomConc)
             if ~isinf(roi(iii).nomConc) && ~isnan(roi(iii).nomConc)
-                subimg=(img.MRF.fs-roi(iii).nomConc).*roi(iii).mask;
-                img.ErrorMaps.fsAbs=img.ErrorMaps.fsAbs+subimg;
-                img.ErrorMaps.fsPct=img.ErrorMaps.fsPct+...
-                    subimg./roi(iii).nomConc*100;
+                if specifiedflg.MRF
+                    subimg=(img.MRF.fs-roi(iii).nomConc).*roi(iii).mask;
+                    img.ErrorMaps.fsAbs=img.ErrorMaps.fsAbs+subimg;
+                    img.ErrorMaps.fsPct=img.ErrorMaps.fsPct+...
+                        subimg./roi(iii).nomConc*100;
+                end
                 if specifiedflg.QUESP
                     subimg2=(img.other.fsQUESP-roi(iii).nomConc).*roi(iii).mask...
                         .*img.other.RsqMask;
