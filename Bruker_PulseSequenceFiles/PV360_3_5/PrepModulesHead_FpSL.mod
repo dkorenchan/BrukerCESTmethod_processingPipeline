@@ -25,8 +25,6 @@
 
 ;**** Saturation Transfer ****
 
-;#include "SatTrans_FpSL_BSL.mod" 
-;#include "SatTrans_FpSL_SL.mod" 
 #include "SatTrans_FpSL_comboSL.mod" 
 
 ;*** FOV Saturation ***
