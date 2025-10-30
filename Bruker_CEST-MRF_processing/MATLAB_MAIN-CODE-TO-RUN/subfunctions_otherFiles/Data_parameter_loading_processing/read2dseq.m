@@ -114,6 +114,10 @@ switch typestr
         % offsets from lowest to highest, noting the order
         info.w_offset1=str2num(satpars{1}); %convert to array of type double
         M0idx=find(abs(info.w_offset1)==max(abs(info.w_offset1)));
+        if length(M0idx)>1
+            warning('No far offset detected for CEST-type data! Using 1st largest offset for M0...')
+            M0idx=M0idx(1);
+        end
         M0image=rawdata(:,:,:,M0idx)';
 
         rawdata(:,:,:,M0idx)=[]; %remove M0 image

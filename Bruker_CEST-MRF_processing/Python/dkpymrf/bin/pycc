@@ -1,0 +1,3 @@
+#!/Users/dk384/Documents/Laboratory/MGH_Farrar-Rosen/Python/py-cest-mrf-for-mac/dkpymrf/bin/python
+from numba.pycc import main
+main()

@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: cest-mrf
+Version: 0.4
+Summary: Python code to use C++ pulseq-CEST to simulate MRI signal and MRF dictionary generation.
+Author: Nikita Vladimirov
+Author-email: nikitav@mail.tau.ac.il
+Keywords: MRI,Bloch,CEST,simulations
+Requires-Python: >=3.9
+License-File: LICENSE

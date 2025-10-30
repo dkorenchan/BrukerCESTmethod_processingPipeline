@@ -1,0 +1,6 @@
+Metadata-Version: 2.1
+Name: BMCSimulator
+Version: 0.2
+Summary: Python package to use the C++ code for pulseq-CEST simulations.
+Author: N. Vladimirov
+Author-email: nikitav@mail.tau.ac.il
