@@ -34,6 +34,17 @@
 %   toggleSettingFlags()
 %   editSettingVals()
 %   finishFig()
+% modified by cbd 12/08/2025
+% Auto-detection parameters:
+% Gauss sigma (default: 4)
+%   - Controls the amount of Gaussian smoothing applied
+%   - Higher values = more smoothing (better for noisy images)
+%   - Lower values = less smoothing (better for sharp tube boundaries)
+% 
+% Min tube pixels (default: 10)
+%   - Minimum number of pixels required for a region to be considered a tube
+%   - Increase this to filter out small noise artifacts
+%   - Decrease this to detect smaller tubes
 %   
 function [img,roi]=imageDispGUI(img,roi,specifiedflg,scan_dirs,parprefs,...
     PV360flg)
@@ -62,6 +73,10 @@ settings.maskImgs=true;
 settings.dpMaskVal=0.999;
 settings.showMTRasymflg=true;
 settings.showFitsflg=true;
+% Set auto-detection parameters; modified by cbd 12/08/2025 start
+settings.autoDetectGaussSigma=4;
+settings.autoDetectMinPixels=10;
+% modified by cbd 12/08/2025 end
 
 % Set initial plotting group, based upon what was loaded
 if isfield(img,'MRF')
@@ -130,12 +145,35 @@ sff=uicontrol(bg1,'Style','checkbox','Position',[10 565 120 22],...
     'Value',settings.showFitsflg,'String','Show pool fits');
 
 % ROI creation
-uicontrol(bg1,'Style','text','Position',[30 535 80 15],...
+uicontrol(bg1,'Style','text','Position',[30 510 80 15],...
     'String','New ROI name:');
-nr=uicontrol(bg1,'Style','edit','Position',[30 510 80 20],...
+nr=uicontrol(bg1,'Style','edit','Position',[30 485 80 20],...
     'String',newname,'Callback',@nameROI);
-uicontrol(bg1,'Style','pushbutton','Position',[0 480 140 30],...
+uicontrol(bg1,'Style','pushbutton','Position',[0 455 140 30],...
     'String','Draw new ROI on slice','Callback',@newROI);
+
+% Tube auto-detection for ROIs (only if zSpec was loaded and has a nonzero 
+% M0 image)
+if isfield(img, 'zSpec') && sum(sum(img.zSpec.M0img))>0
+
+    uicontrol(bg1,'Style','pushbutton','Position',[0 420 140 30],...
+        'String','Auto-detect tubes','Callback',@autoDetectROIs);
+    
+    % Auto-detection parameters ; modified by cbd 12/08/2025 start
+    uicontrol(bg1,'Style','text','Position',[5 395 150 15],...
+        'String','Auto-detect parameters:','FontWeight','bold');
+    uicontrol(bg1,'Style','text','Position',[10 375 100 15],...
+        'String','Gauss sigma:');
+    uicontrol(bg1,'Style','edit','Position',[30 355 80 20],...
+        'String',num2str(settings.autoDetectGaussSigma),...
+        'Tag','autoDetectGaussSigma','Callback',@editSettingVals);
+    uicontrol(bg1,'Style','text','Position',[10 330 120 15],...
+        'String','Min tube pixels:');
+    uicontrol(bg1,'Style','edit','Position',[30 310 80 20],...
+        'String',num2str(settings.autoDetectMinPixels),...
+        'Tag','autoDetectMinPixels','Callback',@editSettingVals);
+    %modified by cbd 12/08/2025 end
+end
 
 % ROI selection and editing
 rbg=uibuttongroup('Position',[.005 .14 .09 .36],...
@@ -251,6 +289,96 @@ roi=checkBoxesEnable(roi,chkbxHandles);
 plotAxImg(img,roi,settings,si)
 end
 
+% autoDetectROIs: Automatically detect phantom tubes and create ROIs;
+% modified by cbd 12/08/2025 start
+function autoDetectROIs(~,~)
+% ONLY uses M0 image from zSpec group for tube detection
+currentImg = [];
+
+% Check if zSpec group exists and has M0 image ; 
+if isfield(img, 'zSpec') && sum(sum(img.zSpec.M0img))>0
+    currentImg = img.zSpec.M0img;
+else
+    errordlg(['M0 image not found. Auto-detect tubes requires M0 reference image from zSpec group. ' ...
+              'Please ensure zSpec data with M0 image is loaded.'], ...
+              'M0 Image Required');
+    return;
+end
+
+% Display status
+set(si, 'String', 'Detecting tubes...', 'ForegroundColor', [0 0.4 0.8]);
+drawnow;
+
+% Get image size from zSpec M0 image
+imgSize = size(img.zSpec.M0img);
+
+% Get user-adjustable detection parameters
+gaussSigma = settings.autoDetectGaussSigma;
+minPixels = settings.autoDetectMinPixels;
+
+% Call auto-detection function with user parameters
+try
+    detectedROIs = autoDetectTubes(currentImg, imgSize, gaussSigma, ...
+        minPixels, 'Tube', true);
+
+    if isempty(detectedROIs)
+        warndlg('No tubes detected. Try adjusting the image or detection parameters.', 'Detection Warning');
+        return;
+    end
+
+    % Replace existing ROIs or append?
+    if nROI > 0
+        answer = questdlg('Replace existing ROIs or append detected tubes?', ...
+            'Auto-detection', 'Replace', 'Append', 'Cancel', 'Append');
+        if strcmp(answer, 'Cancel')
+            return;
+        elseif strcmp(answer, 'Replace')
+            roi = detectedROIs;
+            nROI = numel(roi);
+            roinames = {roi.name};
+        else % Append
+            startIdx = nROI + 1;
+            for i = 1:numel(detectedROIs)
+                roi(startIdx + i - 1) = detectedROIs(i);
+                roi(startIdx + i - 1).name = sprintf('Tube%d', startIdx + i - 1);
+            end
+            nROI = numel(roi);
+            roinames = {roi.name};
+        end
+    else
+        roi = detectedROIs;
+        nROI = numel(roi);
+        roinames = {roi.name};
+    end
+
+    % Update GUI elements
+    if nROI > 0
+        set(rbg,'Visible','on');
+        set(smaf,'Visible','on');
+        set(sff,'Visible','on');
+    end
+    newname = ['ROI' num2str(nROI+1)];
+    set(nr,'String',newname);
+    set(rs,'String',roinames);
+
+    % Calculate ROI statistics and plot
+    [img,roi] = calcROIs(img,roi,settings,specifiedflg,scan_dirs,parprefs,...
+        PV360flg,tfig);
+    roi = checkBoxesEnable(roi,chkbxHandles);
+    plotAxImg(img,roi,settings,si);
+
+    % Clear status indicator and show success message
+    set(si, 'String', '', 'ForegroundColor', [0 0 0]);
+    msgbox(sprintf('Successfully detected %d tubes using M0 image!', numel(detectedROIs)), ...
+        'Detection Success');
+
+catch ME
+    % Clear status indicator and show error
+    set(si, 'String', '', 'ForegroundColor', [0 0 0]);
+    errordlg([ME.exception,'Tube detection failed: ' ME.message], 'Detection Error');
+end
+end
+% modified by cbd 12/08/2025 end
 
 % selROI: Sets which ROI is the active one in the plotting GUI
 function selROI(source,~)
