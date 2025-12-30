@@ -68,10 +68,12 @@ if specifiedflg.QUESP
             true_ksp=roi(iii).kswQUESP.ROIfit;
         end
         % MRF
-        subimg=(img.MRF.ksw-true_ksp).*roi(iii).mask;
-        img.ErrorMaps.kswAbs=img.ErrorMaps.kswAbs+subimg;
-        img.ErrorMaps.kswPct=img.ErrorMaps.kswPct+...
-            subimg./true_ksp*100;
+        if specifiedflg.MRF
+            subimg=(img.MRF.ksw-true_ksp).*roi(iii).mask;
+            img.ErrorMaps.kswAbs=img.ErrorMaps.kswAbs+subimg;
+            img.ErrorMaps.kswPct=img.ErrorMaps.kswPct+...
+                subimg./true_ksp*100;
+        end
         % QUESP
         subimg2=(img.other.kswQUESP-true_ksp).*roi(iii).mask.*img.other.RsqMask;
         img.ErrorMaps.kswQUESPAbs=img.ErrorMaps.kswQUESPAbs+subimg2;

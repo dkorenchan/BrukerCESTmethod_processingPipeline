@@ -178,48 +178,88 @@ conc_to_fs=3/110000; %conversion factor from mM to volume fraction
 % Default QUESP fitting bounds and starting points
 fitopts_def.Lower      = [2*conc_to_fs      20      ];
 fitopts_def.StartPoint = [40*conc_to_fs     2000    ];
-fitopts_def.Upper      = [120*conc_to_fs    7000    ];
+fitopts_def.Upper      = [120*conc_to_fs    10000    ];
 
 % Fit QUESP data across powers, removing highest 1 or 2 powers if fitting
 % throws an error
 disp(['QUESP data: ' QUESPfcn ' QUESP fitting of MTR asymmetry to '...
     'calculate ksw and fs by ' fitmode '...'])
 tic
-parfor iii=1:numel(elementvec)
-    z_lab=z_lab_element(iii,:);
-    z_ref=z_ref_element(iii,:);
-    fitopts=fitopts_def;
-
-    % If a fixed concentration is specified for the ROI, use to fix fitopts
-    if ~isinf(fixconc(iii))
-        fitopts.Lower(1)=fixconc(iii)*conc_to_fs;
-        fitopts.StartPoint(1)=fixconc(iii)*conc_to_fs;
-        fitopts.Upper(1)=fixconc(iii)*conc_to_fs;
-    end
-
-% Try with all B1 values, but remove the last 2 points successively if 
-% unsuccessful    
-    try %all power values fitted
-        [~,kswfit(iii),fsfit(iii),Rsqfit(iii)]=QUESPfitting(...
-            z_lab,z_ref,satamps,...
-            {QUESPfcn},T1mapvec(iii),timepars,false,[],fitopts);    
-    catch
-        try %all but last power value fitted
-            [~,kswfit(iii),fsfit(iii),Rsqfit(iii)]=QUESPsingleROI(...
-                z_lab(1:(end-1)),z_ref(1:(end-1)),satamps(1:(end-1)),...
-                {QUESPfcn},timepars,T1mapvec(iii),false,[],fitopts);
-            less1pwrnum=less1pwrnum+1;
-        catch
-            try %all but last 2 power values fitted
-                [~,kswfit(iii),fsfit(iii),Rsqfit(iii)]=QUESPsingleROI(...
-                    z_lab(1:(end-2)),z_ref(1:(end-2)),satamps(1:(end-2)),...
-                    {QUESPfcn},timepars,T1mapvec(iii),false,[],fitopts);
-                less2pwrnum=less2pwrnum+1;                
-            catch
-                failnum=failnum+1;
+switch fitmode
+    case 'voxel'
+        parfor iii=1:numel(elementvec)
+            z_lab=z_lab_element(iii,:);
+            z_ref=z_ref_element(iii,:);
+            fitopts=fitopts_def;
+        
+            % If a fixed concentration is specified for the ROI, use to fix fitopts
+            if ~isinf(fixconc(iii))
+                fitopts.Lower(1)=fixconc(iii)*conc_to_fs;
+                fitopts.StartPoint(1)=fixconc(iii)*conc_to_fs;
+                fitopts.Upper(1)=fixconc(iii)*conc_to_fs;
             end
-        end        
-    end
+        
+        % Try with all B1 values, but remove the last 2 points successively if 
+        % unsuccessful    
+            try %all power values fitted
+                [~,kswfit(iii),fsfit(iii),Rsqfit(iii)]=QUESPfitting(...
+                    z_lab,z_ref,satamps,...
+                    {QUESPfcn},T1mapvec(iii),timepars,false,[],fitopts);    
+            catch
+                try %all but last power value fitted
+                    [~,kswfit(iii),fsfit(iii),Rsqfit(iii)]=QUESPsingleROI(...
+                        z_lab(1:(end-1)),z_ref(1:(end-1)),satamps(1:(end-1)),...
+                        {QUESPfcn},timepars,T1mapvec(iii),false,[],fitopts);
+                    less1pwrnum=less1pwrnum+1;
+                catch
+                    try %all but last 2 power values fitted
+                        [~,kswfit(iii),fsfit(iii),Rsqfit(iii)]=QUESPsingleROI(...
+                            z_lab(1:(end-2)),z_ref(1:(end-2)),satamps(1:(end-2)),...
+                            {QUESPfcn},timepars,T1mapvec(iii),false,[],fitopts);
+                        less2pwrnum=less2pwrnum+1;                
+                    catch
+                        failnum=failnum+1;
+                    end
+                end        
+            end
+        end
+    case 'ROI'
+        for iii=1:numel(elementvec)
+            z_lab=z_lab_element(iii,:);
+            z_ref=z_ref_element(iii,:);
+            fitopts=fitopts_def;
+        
+            % If a fixed concentration is specified for the ROI, use to fix fitopts
+            if ~isinf(fixconc(iii))
+                fitopts.Lower(1)=fixconc(iii)*conc_to_fs;
+                fitopts.StartPoint(1)=fixconc(iii)*conc_to_fs;
+                fitopts.Upper(1)=fixconc(iii)*conc_to_fs;
+            end
+        
+        % Try with all B1 values, but remove the last 2 points successively if 
+        % unsuccessful    
+            try %all power values fitted
+                [~,kswfit(iii),fsfit(iii),Rsqfit(iii)]=QUESPfitting(...
+                    z_lab,z_ref,satamps,...
+                    {QUESPfcn},T1mapvec(iii),timepars,false,[],fitopts);    
+            catch
+                try %all but last power value fitted
+                    [~,kswfit(iii),fsfit(iii),Rsqfit(iii)]=QUESPsingleROI(...
+                        z_lab(1:(end-1)),z_ref(1:(end-1)),satamps(1:(end-1)),...
+                        {QUESPfcn},timepars,T1mapvec(iii),false,[],fitopts);
+                    less1pwrnum=less1pwrnum+1;
+                catch
+                    try %all but last 2 power values fitted
+                        [~,kswfit(iii),fsfit(iii),Rsqfit(iii)]=QUESPsingleROI(...
+                            z_lab(1:(end-2)),z_ref(1:(end-2)),satamps(1:(end-2)),...
+                            {QUESPfcn},timepars,T1mapvec(iii),false,[],fitopts);
+                        less2pwrnum=less2pwrnum+1;                
+                    catch
+                        failnum=failnum+1;
+                    end
+                end        
+            end
+        end
 end
 toc
 disp(['QUESP data: Fitting was successful for ' ...
