@@ -2,7 +2,7 @@
 This repository is designed to help users perform quantitative **chemical exchange saturation transfer (CEST)** imaging using **magnetic resonance fingerprinting (MRF)**. It contains the following files:
 
 1. Bruker ParaVision method files for acquiring CEST-MRF images on a Bruker preclinical scanner;
-2. MATLAB code for interactive processing of study data including CEST-MRF imaging (please see below for better version!); and
+2. MATLAB code for interactive processing of study data including CEST-MRF imaging (*please see below for better version!*); and
 3. Python code that interfaces the MATLAB processing pipeline with the Bloch-McConnell simulation developed by the Momentum Laboratory at Tel Aviv University (https://github.com/momentum-laboratory/molecular-mrf)
 
 ## IMPORTANT: BETTER PROCESSING PLATFORM AVAILABLE
